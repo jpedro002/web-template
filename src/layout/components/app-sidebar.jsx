@@ -1,17 +1,6 @@
 'use client'
 
-import {
-	AudioWaveform,
-	BookOpen,
-	Bot,
-	Command,
-	Frame,
-	GalleryVerticalEnd,
-	Map,
-	PieChart,
-	Settings2,
-	SquareTerminal,
-} from 'lucide-react'
+import { Command } from 'lucide-react'
 import {
 	Sidebar,
 	SidebarContent,
@@ -20,136 +9,35 @@ import {
 	SidebarRail,
 } from 'src/components/ui/sidebar'
 import { NavMain } from 'src/layout/components/nav-main'
-import { NavProjects } from 'src/layout/components/nav-projects'
 import { NavUser } from 'src/layout/components/nav-user'
-import { TeamSwitcher } from 'src/layout/components/team-switcher'
 
-// This is sample data.
+// Dados de navegação com permissões organizados por módulos
 const data = {
-	user: {
-		name: 'shadcn',
-		email: 'm@example.com',
-		avatar: '/avatars/shadcn.jpg',
-	},
-	teams: [
-		{
-			name: 'Acme Inc',
-			logo: GalleryVerticalEnd,
-			plan: 'Enterprise',
-		},
-		{
-			name: 'Acme Corp.',
-			logo: AudioWaveform,
-			plan: 'Startup',
-		},
-		{
-			name: 'Evil Corp.',
-			logo: Command,
-			plan: 'Free',
-		},
-	],
 	navMain: [
 		{
-			title: 'Playground',
-			url: '#',
-			icon: SquareTerminal,
-			isActive: true,
+			title: 'Segurança',
+			icon: 'Shield',
+			permission: null, // Módulo raiz sem permissão específica
 			items: [
 				{
-					title: 'History',
-					url: '#',
+					title: 'Usuários',
+					url: '/usuarios',
+					icon: 'Users',
+					permission: 'users:read',
 				},
 				{
-					title: 'Starred',
-					url: '#',
+					title: 'Roles',
+					url: '/roles',
+					icon: 'Shield',
+					permission: 'roles:read',
 				},
 				{
-					title: 'Settings',
-					url: '#',
+					title: 'Permissões',
+					url: '/permissoes',
+					icon: 'Lock',
+					permission: 'permissions:read',
 				},
 			],
-		},
-		{
-			title: 'Models',
-			url: '#',
-			icon: Bot,
-			items: [
-				{
-					title: 'Genesis',
-					url: '#',
-				},
-				{
-					title: 'Explorer',
-					url: '#',
-				},
-				{
-					title: 'Quantum',
-					url: '#',
-				},
-			],
-		},
-		{
-			title: 'Documentation',
-			url: '#',
-			icon: BookOpen,
-			items: [
-				{
-					title: 'Introduction',
-					url: '#',
-				},
-				{
-					title: 'Get Started',
-					url: '#',
-				},
-				{
-					title: 'Tutorials',
-					url: '#',
-				},
-				{
-					title: 'Changelog',
-					url: '#',
-				},
-			],
-		},
-		{
-			title: 'Settings',
-			url: '#',
-			icon: Settings2,
-			items: [
-				{
-					title: 'General',
-					url: '#',
-				},
-				{
-					title: 'Team',
-					url: '#',
-				},
-				{
-					title: 'Billing',
-					url: '#',
-				},
-				{
-					title: 'Limits',
-					url: '#',
-				},
-			],
-		},
-	],
-	projects: [
-		{
-			name: 'Design Engineering',
-			url: '#',
-			icon: Frame,
-		},
-		{
-			name: 'Sales & Marketing',
-			url: '#',
-			icon: PieChart,
-		},
-		{
-			name: 'Travel',
-			url: '#',
-			icon: Map,
 		},
 	],
 }
@@ -157,15 +45,20 @@ const data = {
 export function AppSidebar({ ...props }) {
 	return (
 		<Sidebar collapsible="icon" {...props}>
-			<SidebarHeader>
-				<TeamSwitcher teams={data.teams} />
+			<SidebarHeader className="flex flex-row">
+				<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+					<Command className="size-4" />
+				</div>
+				<div className="grid flex-1 text-left text-sm leading-tight">
+					<span className="truncate font-semibold">Seu App</span>
+					<span className="truncate text-xs">v1.0</span>
+				</div>
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={data.navMain} />
-				<NavProjects projects={data.projects} />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={data.user} />
+				<NavUser />
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>

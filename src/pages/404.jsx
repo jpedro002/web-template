@@ -10,7 +10,7 @@ const NotFound = () => {
 
 	const handleGoHome = () => {
 		// Ajuste o caminho conforme a rota principal do seu app
-		navigate('/auth/home')
+		navigate('/')
 	}
 
 	const handleGoBack = () => {
