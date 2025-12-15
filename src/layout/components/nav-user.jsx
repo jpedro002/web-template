@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import {
 	BadgeCheck,
 	Bell,
@@ -27,18 +28,20 @@ import { useAuth, useAuthUser } from 'src/contexts/auth-context'
 import { useLogout } from 'src/services/auth'
 
 export function NavUser() {
+	const navigate = useNavigate()
 	const { isMobile } = useSidebar()
 	const { logout: logoutFn } = useAuth()
 	const user = useAuthUser()
-	const { mutate: logout } = useLogout()
+	const { mutateAsync: logout } = useLogout()
 
 	// Fallback se usuário não estiver carregado
 	if (!user) {
 		return null
 	}
 
-	const handleLogout = () => {
-		logout()
+	const handleLogout = async () => {
+		await logout()
+		navigate('/auth')
 	}
 
 	// Gerar initials do nome

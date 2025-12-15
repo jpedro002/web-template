@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { api } from 'src/lib/axios'
 
 // ==========================================
@@ -193,13 +194,8 @@ export function useLogout() {
 	return useMutation({
 		mutationFn: authService.logout,
 		onSuccess: () => {
-			// Limpar cache
-			queryClient.clear()
-
-			// Redirecionar para login
-			if (!window.location.pathname.includes('/auth')) {
-				window.location.href = '/auth/login'
-			}
+			// Limpar apenas as queries de autenticação, não todas
+			queryClient.removeQueries({ queryKey: sessionKeys.all })
 		},
 	})
 }
@@ -280,8 +276,30 @@ export function useCurrentUser() {
  * @returns {boolean}
  */
 export function useIsAuthenticated() {
-	const token = localStorage.getItem('token')
-	return !!token
+	const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'))
+	const queryClient = useQueryClient()
+
+	useEffect(() => {
+		// Função para atualizar baseado no localStorage
+		const checkAuth = () => {
+			setIsAuth(!!localStorage.getItem('token'))
+		}
+
+		// Escutar mudanças na query cache
+		const unsubscribe = queryClient.getQueryCache().subscribe(() => {
+			checkAuth()
+		})
+
+		// Escutar mudanças no localStorage (para outro tab/janela)
+		window.addEventListener('storage', checkAuth)
+
+		return () => {
+			unsubscribe()
+			window.removeEventListener('storage', checkAuth)
+		}
+	}, [queryClient])
+
+	return isAuth
 }
 
 // Exportar service para uso direto se necessário

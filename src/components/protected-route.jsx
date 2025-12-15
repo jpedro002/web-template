@@ -42,7 +42,7 @@ export function PermissionRoute({ children, permission, fallback = null }) {
 	}
 
 	if (!isAuthenticated) {
-		return <Navigate to="/auth/login" replace />
+		return <Navigate to="/auth" replace />
 	}
 
 	const permissions = session?.user?.permissions || []
@@ -72,7 +72,7 @@ export function RoleRoute({ children, role, fallback = null }) {
 	}
 
 	if (!isAuthenticated) {
-		return <Navigate to="/auth/login" replace />
+		return <Navigate to="/auth" replace />
 	}
 
 	const roles = session?.user?.roles || []

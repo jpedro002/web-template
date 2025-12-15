@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, Key, User } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -13,11 +14,12 @@ import {
 import { Field, FieldGroup, FieldLabel } from 'src/components/ui/field'
 import { Input } from 'src/components/ui/input'
 import { cn } from 'src/lib/utils'
+import { useAuth } from 'src/contexts/auth-context'
 import { useLogin } from 'src/services/auth'
 import { z } from 'zod'
 
 const loginSchema = z.object({
-	email: z.string().email('Email inválido').min(1, 'O email é obrigatório'),
+	email: z.string().min(1, 'O email é obrigatório'),
 	password: z
 		.string()
 		.min(1, 'A senha é obrigatória')
@@ -26,6 +28,7 @@ const loginSchema = z.object({
 
 export function LoginForm({ className, ...props }) {
 	const navigate = useNavigate()
+	const { isAuthenticated } = useAuth()
 	const loginMutation = useLogin()
 
 	const {
@@ -34,49 +37,17 @@ export function LoginForm({ className, ...props }) {
 		formState: { errors, isSubmitting },
 	} = useForm({ resolver: zodResolver(loginSchema) })
 
+	// Redirecionar para home após login bem-sucedido
+	useEffect(() => {
+		if (isAuthenticated) {
+			navigate('/')
+		}
+	}, [isAuthenticated, navigate])
+
 	const onSubmit = async (data) => {
 		try {
-			await loginMutation.mutateAsync(data, {
-				onSuccess: (response) => {
-					// Mostrar notificação de sucesso
-					toast.success(
-						<div className="flex flex-col gap-3">
-							<div className="flex items-center gap-2">
-								<div className="h-6 w-6 shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-									<CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
-								</div>
-								<span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-									Login realizado com sucesso!
-								</span>
-							</div>
-							<div className="grid gap-2 rounded-md bg-white dark:bg-zinc-950 p-3 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-								<div className="flex items-center justify-between gap-4 text-sm">
-									<div className="flex items-center gap-2 text-zinc-500">
-										<User className="w-3.5 h-3.5" />
-										<span>Usuário</span>
-									</div>
-									<span className="font-medium truncate max-w-[150px] text-zinc-900 dark:text-zinc-100">
-										{response.user?.name || data.email}
-									</span>
-								</div>
-							</div>
-						</div>,
-						{
-							duration: 3000,
-							className: `
-								!bg-emerald-50 dark:!bg-emerald-900/20 
-								!border-emerald-200 dark:!border-emerald-800 
-								!text-emerald-900 dark:!text-emerald-50
-							`,
-						},
-					)
-
-					// Redirecionar para dashboard
-					setTimeout(() => {
-						navigate('/')
-					}, 1500)
-				},
-			})
+			await loginMutation.mutateAsync(data)
+			// Não navegar aqui, deixar o useEffect fazer
 		} catch (error) {
 			// Erro já é tratado pelo interceptador, mas podemos adicionar lógica customizada aqui
 			console.error('Login error:', error)

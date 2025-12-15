@@ -9,10 +9,11 @@ const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
 	const [isReady, setIsReady] = useState(false)
+	const [authRefresh, setAuthRefresh] = useState(0)
 	const isAuthenticated = useIsAuthenticated()
 	const { data: session, isLoading: sessionLoading } =
 		useSession(isAuthenticated)
-	const { mutate: logout } = useLogout()
+	const { mutate: logoutMutate } = useLogout()
 
 	useEffect(() => {
 		// Marcar como pronto após carregar a sessão
@@ -21,12 +22,22 @@ export function AuthProvider({ children }) {
 		}
 	}, [sessionLoading])
 
+	useEffect(() => {
+		// Escutar mudanças no localStorage para sincronizar entre tabs
+		const handleStorageChange = () => {
+			setAuthRefresh(prev => prev + 1)
+		}
+
+		window.addEventListener('storage', handleStorageChange)
+		return () => window.removeEventListener('storage', handleStorageChange)
+	}, [])
+
 	const value = {
 		isAuthenticated,
 		session,
 		sessionLoading,
 		isReady,
-		logout,
+		logout: logoutMutate,
 	}
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
