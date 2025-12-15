@@ -1,4 +1,4 @@
-import Form from '../components/Form/Form'
+import Form from '../src/components/form/Form'
 
 /**
  * CASOS DE USO PRÁTICOS DO FORM COMPONENT
