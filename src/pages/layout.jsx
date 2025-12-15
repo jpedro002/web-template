@@ -1,11 +1,11 @@
 import { Outlet } from 'react-router'
 import { AuthProvider } from 'src/contexts/auth-context'
 
-const layout = () => {
+const Layout = () => {
 	return (
 		<AuthProvider>
 			<Outlet />
 		</AuthProvider>
 	)
 }
-export default layout
+export default Layout

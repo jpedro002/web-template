@@ -29,6 +29,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from 'src/components/ui/select'
+import { SearchSelect } from 'src/components/ui/search-select'
 import { Switch } from 'src/components/ui/switch'
 import { Textarea } from 'src/components/ui/textarea'
 // Utilitários
@@ -145,14 +146,15 @@ const Form = React.forwardRef(
 						if (!shouldBeRequired) baseSchema = baseSchema.optional()
 						break
 					case 'checkbox-group':
-					case 'searchPicker':
-						if (field.multiSelect) {
-							baseSchema = z.array(z.union([z.string(), z.number()]))
-							if (shouldBeRequired)
-								baseSchema = baseSchema.min(1, 'Selecione pelo menos uma opção')
-							else baseSchema = baseSchema.optional()
-						} else {
-							baseSchema = z.string()
+				case 'searchSelect':
+				case 'searchPicker':
+					if (field.multiple || field.multiSelect) {
+						baseSchema = z.array(z.union([z.string(), z.number()]))
+						if (shouldBeRequired)
+							baseSchema = baseSchema.min(1, 'Selecione pelo menos uma opção')
+						else baseSchema = baseSchema.optional()
+					} else {
+						baseSchema = z.union([z.string(), z.number()])
 							if (!shouldBeRequired)
 								baseSchema = baseSchema.optional().or(z.literal(''))
 						}
@@ -190,8 +192,9 @@ const Form = React.forwardRef(
 							acc[field.name] = false
 							break
 						case 'checkbox-group':
-						case 'searchPicker':
-							acc[field.name] = field.multiSelect ? [] : ''
+					case 'searchSelect':
+					case 'searchPicker':
+						acc[field.name] = field.multiple || field.multiSelect ? [] : ''
 							break
 						case 'number':
 							acc[field.name] = ''
@@ -613,6 +616,31 @@ const Form = React.forwardRef(
 								/>
 							))}
 						</div>
+					</FieldWrapper>
+				)
+			}
+
+			if (type === 'searchSelect') {
+				return (
+					<FieldWrapper key={name} {...wrapperProps}>
+						<Controller
+							control={control}
+							name={name}
+							render={({ field: { onChange, value } }) => (
+								<SearchSelect
+									options={options || []}
+									value={value}
+									onChange={onChange}
+									placeholder={placeholder || 'Selecione uma opção...'}
+									searchPlaceholder={field.searchPlaceholder || 'Buscar...'}
+									multiple={field.multiple || false}
+									disabled={disabled}
+									className={cn(
+										errorMessage && 'border-red-500 focus-visible:ring-red-500',
+									)}
+								/>
+							)}
+						/>
 					</FieldWrapper>
 				)
 			}

@@ -276,18 +276,28 @@ export function useCurrentUser() {
  * @returns {boolean}
  */
 export function useIsAuthenticated() {
-	const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'))
+	const [isAuth, setIsAuth] = useState(() => !!localStorage.getItem('token'))
 	const queryClient = useQueryClient()
 
 	useEffect(() => {
 		// Função para atualizar baseado no localStorage
 		const checkAuth = () => {
-			setIsAuth(!!localStorage.getItem('token'))
+			const hasToken = !!localStorage.getItem('token')
+			setIsAuth(prev => {
+				// Só atualiza se realmente mudou
+				if (prev !== hasToken) {
+					return hasToken
+				}
+				return prev
+			})
 		}
 
 		// Escutar mudanças na query cache
-		const unsubscribe = queryClient.getQueryCache().subscribe(() => {
-			checkAuth()
+		const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+			// Só verifica auth quando há mudanças relevantes
+			if (event?.query?.queryKey?.[0] === 'auth') {
+				checkAuth()
+			}
 		})
 
 		// Escutar mudanças no localStorage (para outro tab/janela)

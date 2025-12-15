@@ -1,0 +1,124 @@
+import { useParams, useNavigate } from 'react-router'
+import { Helmet } from 'react-helmet-async'
+import { ArrowLeft, Loader2, Save } from 'lucide-react'
+import { Button } from 'src/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card'
+import { use{{entityPascal}}, use{{entityPascal}}Create, use{{entityPascal}}Update } from 'src/services/{{entityPlural}}'
+import { toast } from 'sonner'
+
+export default function {{entityPascal}}DetailPage() {
+    const { id } = useParams()
+    const navigate = useNavigate()
+    const isNew = id === 'new'
+
+    // Busca dados se for edição
+    const { data: {{entityCamel}}, isLoading } = use{{entityPascal}}(id, {
+        enabled: !isNew,
+    })
+
+    // Mutations
+    const createMutation = use{{entityPascal}}Create({
+        onSuccess: () => {
+            toast.success('{{entityPascal}} criado com sucesso!')
+            navigate('..')
+        },
+        onError: (error) => {
+            toast.error(error.message || 'Erro ao criar {{entityLower}}')
+        },
+    })
+
+    const updateMutation = use{{entityPascal}}Update({
+        onSuccess: () => {
+            toast.success('{{entityPascal}} atualizado com sucesso!')
+            navigate('..')
+        },
+        onError: (error) => {
+            toast.error(error.message || 'Erro ao atualizar {{entityLower}}')
+        },
+    })
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        const formData = new FormData(e.target)
+        const data = Object.fromEntries(formData)
+
+        if (isNew) {
+            createMutation.mutate(data)
+        } else {
+            updateMutation.mutate({ id, data })
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        )
+    }
+
+    return (
+        <>
+            <Helmet>
+                <title>{isNew ? 'Novo' : 'Editar'} {{entityPascal}}</title>
+            </Helmet>
+
+            <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => navigate('..')}>
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            {isNew ? 'Novo' : 'Editar'} {{entityPascal}}
+                        </h1>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Dados do {{entityPascal}}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* TODO: Adicionar campos do formulário aqui */}
+                            <div>
+                                <label htmlFor="nome" className="block text-sm font-medium mb-2">
+                                    Nome *
+                                </label>
+                                <input
+                                    id="nome"
+                                    name="nome"
+                                    type="text"
+                                    required
+                                    defaultValue={{{entityCamel}}?.nome}
+                                    className="w-full px-3 py-2 border rounded-md"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => navigate('..')}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={createMutation.isPending || updateMutation.isPending}
+                                >
+                                    {(createMutation.isPending || updateMutation.isPending) && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    <Save className="mr-2 h-4 w-4" />
+                                    Salvar
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+    )
+}

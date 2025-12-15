@@ -325,7 +325,7 @@ ${Array.from(imports).join('\n')}
 
 ${preloadMapCode}
 
-const routes = createBrowserRouter([
+export const routes = createBrowserRouter([
   ${routesCode},
   { path: '*', element: <Navigate to="/404" replace /> }
 ]);

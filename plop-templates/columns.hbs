@@ -1,0 +1,80 @@
+import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
+import { Link } from 'react-router'
+import { Button } from 'src/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from 'src/components/ui/dropdown-menu'
+import { Badge } from 'src/components/ui/badge'
+
+export const columns = ({ onDelete }) => [
+    {
+        accessorKey: 'id',
+        header: 'ID',
+        size: 80,
+    },
+    {
+        accessorKey: 'nome',
+        header: 'Nome',
+    },
+    {
+        accessorKey: 'ativo',
+        header: 'Status',
+        cell: ({ row }) => {
+            const ativo = row.getValue('ativo')
+            return (
+                <Badge variant={ativo ? 'default' : 'secondary'}>
+                    {ativo ? 'Ativo' : 'Inativo'}
+                </Badge>
+            )
+        },
+        size: 100,
+    },
+    {
+        accessorKey: 'createdAt',
+        header: 'Criado em',
+        cell: ({ row }) => {
+            return new Date(row.getValue('createdAt')).toLocaleDateString('pt-BR')
+        },
+        size: 120,
+    },
+    {
+        id: 'actions',
+        cell: ({ row }) => {
+            const {{entityCamel}} = row.original
+
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link to={{{entityCamel}}.id}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Editar
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => onDelete({{entityCamel}}.id)}
+                            className="text-destructive focus:text-destructive"
+                        >
+                            <Trash className="mr-2 h-4 w-4" />
+                            Excluir
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        },
+        size: 80,
+    },
+]

@@ -1,0 +1,83 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { Plus, Loader2 } from 'lucide-react'
+import { Helmet } from 'react-helmet-async'
+import { Button } from 'src/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card'
+import { use{{entityPascal}}List, use{{entityPascal}}Delete } from 'src/services/{{entityPlural}}'
+import { columns } from './columns'
+import { DataTable } from 'src/components/table/table'
+import { toast } from 'sonner'
+
+export default function {{entityPascal}}ListPage() {
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 10,
+    })
+
+    const { data, isLoading } = use{{entityPascal}}List({
+        page: pagination.pageIndex + 1,
+        pageSize: pagination.pageSize,
+    })
+
+    const deleteMutation = use{{entityPascal}}Delete({
+        onSuccess: () => {
+            toast.success('{{entityPascal}} excluído com sucesso!')
+        },
+        onError: (error) => {
+            toast.error(error.message || 'Erro ao excluir {{entityLower}}')
+        },
+    })
+
+    const handleDelete = (id) => {
+        if (window.confirm('Tem certeza que deseja excluir este {{entityLower}}?')) {
+            deleteMutation.mutate(id)
+        }
+    }
+
+    return (
+        <>
+            <Helmet>
+                <title>{{entityPascal}}s</title>
+            </Helmet>
+
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">{{entityPascal}}s</h1>
+                        <p className="text-muted-foreground">
+                            Gerencie os {{entityPlural}} do sistema
+                        </p>
+                    </div>
+                    <Button asChild>
+                        <Link to="new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Novo {{entityPascal}}
+                        </Link>
+                    </Button>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Lista de {{entityPascal}}s</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : (
+                            <DataTable
+                                columns={columns({ onDelete: handleDelete })}
+                                data={data?.data || []}
+                                pagination={pagination}
+                                setPagination={setPagination}
+                                rowCount={data?.total || 0}
+                            />
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+    )
+}

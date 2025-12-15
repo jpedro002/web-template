@@ -46,6 +46,11 @@ export const generateColumns = (
 					? row.original[h.field]?.[h.complex]
 					: row.original[h.field]
 
+				// Renderização customizada via função render
+				if (h.type === 'custom' && h.render) {
+					return h.render(value, row.original)
+				}
+
 				// Renderização customizada baseada no type
 				if (h.type === 'boolean') {
 					return (
@@ -53,7 +58,13 @@ export const generateColumns = (
 							variant={value ? 'default' : 'secondary'}
 							className={value ? 'bg-[#2f7d23]' : ''}
 						>
-							{value ? 'Sim' : 'Não'}
+							{h.trueLabel && h.falseLabel
+								? value
+									? h.trueLabel
+									: h.falseLabel
+								: value
+									? 'Sim'
+									: 'Não'}
 						</Badge>
 					)
 				}

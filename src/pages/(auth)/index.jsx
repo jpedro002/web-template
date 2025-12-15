@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Form from 'src/components/form/Form'
-import { SearchSelect } from 'src/components/ui/search-select'
 import { toast } from 'src/lib/toast'
 import { z } from 'zod'
 
@@ -18,8 +17,6 @@ export default function Page() {
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [formData, setFormData] = useState(null)
 	const [selectedCharacterId, setSelectedCharacterId] = useState(1)
-	const [selectedFavorites, setSelectedFavorites] = useState([])
-	const [selectedStatus, setSelectedStatus] = useState(null)
 
 	// ===== 1. SCHEMA DE VALIDAÇÃO COM ZOD =====
 	const addressSchema = z.object({
@@ -269,48 +266,37 @@ export default function Page() {
 		},
 		{
 			name: 'searchFavorites',
-			label: 'Personagens Favoritos (SearchSelect)',
-			type: 'custom',
+			label: 'Personagens Favoritos',
+			type: 'searchSelect',
 			required: false,
 			cols: 6,
-			render: () => (
-				<SearchSelect
-					options={[
-						{ value: 'rick', label: 'Rick Sanchez' },
-						{ value: 'morty', label: 'Morty Smith' },
-						{ value: 'summer', label: 'Summer Smith' },
-						{ value: 'jerry', label: 'Jerry Smith' },
-						{ value: 'beth', label: 'Beth Smith' },
-						{ value: 'jessica', label: 'Jessica' },
-						{ value: 'birdperson', label: 'Bird Person' },
-					]}
-					value={selectedFavorites}
-					onChange={setSelectedFavorites}
-					multiple={true}
-					placeholder="Selecione personagens favoritos..."
-					searchPlaceholder="Buscar personagem..."
-				/>
-			),
+			multiple: true,
+			placeholder: 'Selecione personagens favoritos...',
+			searchPlaceholder: 'Buscar personagem...',
+			options: [
+				{ value: 'rick', label: 'Rick Sanchez' },
+				{ value: 'morty', label: 'Morty Smith' },
+				{ value: 'summer', label: 'Summer Smith' },
+				{ value: 'jerry', label: 'Jerry Smith' },
+				{ value: 'beth', label: 'Beth Smith' },
+				{ value: 'jessica', label: 'Jessica' },
+				{ value: 'birdperson', label: 'Bird Person' },
+			],
 		},
 		{
 			name: 'searchStatus',
-			label: 'Status do Personagem (SearchSelect)',
-			type: 'custom',
+			label: 'Status do Personagem',
+			type: 'searchSelect',
 			required: false,
 			cols: 6,
-			render: () => (
-				<SearchSelect
-					options={[
-						{ value: 'alive', label: 'Vivo' },
-						{ value: 'dead', label: 'Morto' },
-						{ value: 'unknown', label: 'Desconhecido' },
-					]}
-					value={selectedStatus}
-					onChange={setSelectedStatus}
-					placeholder="Selecione um status..."
-					searchPlaceholder="Buscar status..."
-				/>
-			),
+			multiple: false,
+			placeholder: 'Selecione um status...',
+			searchPlaceholder: 'Buscar status...',
+			options: [
+				{ value: 'alive', label: 'Vivo' },
+				{ value: 'dead', label: 'Morto' },
+				{ value: 'unknown', label: 'Desconhecido' },
+			],
 		},
 	]
 

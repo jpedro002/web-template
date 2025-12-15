@@ -4,7 +4,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { RouterProvider } from 'react-router'
 import { Toaster } from 'sonner'
 // @ts-expect-error
-import routes from 'src/generated/routes'
+import { routes } from 'src/generated/routes'
 import { persister, queryClient } from './lib/react-query'
 
 const App = () => {
