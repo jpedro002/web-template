@@ -2,7 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { AlertCircle, CalendarIcon, Loader2 } from 'lucide-react'
-import React, { useEffect, useImperativeHandle, useMemo } from 'react'
+import React, {
+	useEffect,
+	useImperativeHandle,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Button } from 'src/components/ui/button'
 import { Calendar } from 'src/components/ui/calendar'
@@ -42,6 +48,51 @@ const ErrorMessage = ({ error }) => {
 	)
 }
 
+/**
+ * Helper para Grid Classes
+ */
+const getGridClass = (cols) => {
+	const colsMap = {
+		1: 'col-span-12 md:col-span-1',
+		2: 'col-span-12 md:col-span-2',
+		3: 'col-span-12 md:col-span-3',
+		4: 'col-span-12 md:col-span-4',
+		5: 'col-span-12 md:col-span-5',
+		6: 'col-span-12 md:col-span-6',
+		7: 'col-span-12 md:col-span-7',
+		8: 'col-span-12 md:col-span-8',
+		9: 'col-span-12 md:col-span-9',
+		10: 'col-span-12 md:col-span-10',
+		11: 'col-span-12 md:col-span-11',
+		12: 'col-span-12',
+	}
+	return colsMap[cols] || colsMap[12]
+}
+
+/**
+ * Wrapper Component
+ */
+const FieldWrapper = ({ field, error, showRequiredIndicator, children }) => {
+	const { name, label, type, required } = field
+	const cols = field.cols || 12
+	const gridClass = getGridClass(cols)
+
+	return (
+		<div className={`${gridClass} space-y-2`}>
+			{type !== 'boolean' && type !== 'switch' && type !== 'checkbox' && (
+				<Label htmlFor={name} className={cn(error && 'text-red-500')}>
+					{label}{' '}
+					{required && showRequiredIndicator && (
+						<span className="text-red-500">*</span>
+					)}
+				</Label>
+			)}
+			{children}
+			<ErrorMessage error={error} />
+		</div>
+	)
+}
+
 const Form = React.forwardRef(
 	(
 		{
@@ -57,75 +108,73 @@ const Form = React.forwardRef(
 		},
 		ref,
 	) => {
-		// --- 1. GERAÇÃO DE SCHEMA (Lógica Mantida e Adaptada) ---
+		// --- 1. GERAÇÃO DE SCHEMA ---
 		const generatedSchema = useMemo(() => {
 			if (schema) return schema
 			const shape = {}
 
 			fields.forEach((field) => {
-				// Se tiver condição, começamos como optional, pois pode estar oculto
+				const hasCondition = !!field.condition
+				const shouldBeRequired = field.required && !hasCondition
 				let baseSchema
 
-				// Simplificação da lógica de schema para brevidade, mantendo a robustez original
 				switch (field.type) {
 					case 'email':
 						baseSchema = z.string().email('E-mail inválido')
-						if (!field.required) baseSchema = baseSchema.or(z.literal(''))
+						if (!shouldBeRequired) baseSchema = baseSchema.or(z.literal(''))
 						break
 					case 'number':
-						// Na web, inputs number retornam string vazia ou string numérica.
-						// Usamos valueAsNumber no register, que retorna NaN se vazio.
 						baseSchema = z.number({ invalid_type_error: 'Deve ser um número' })
-						if (!field.required) baseSchema = baseSchema.or(z.nan()).optional()
+						if (!shouldBeRequired)
+							baseSchema = baseSchema.or(z.nan()).optional()
 						break
 					case 'date':
 					case 'datetime':
 						baseSchema = z.date({ required_error: 'Selecione uma data' })
-						if (!field.required) baseSchema = baseSchema.optional().nullable()
+						if (!shouldBeRequired) baseSchema = baseSchema.optional().nullable()
 						break
 					case 'boolean':
 					case 'switch':
+					case 'checkbox':
 						baseSchema = z.boolean()
 						if (field.mustBeTrue)
 							baseSchema = baseSchema.refine(
 								(val) => val === true,
 								'Obrigatório',
 							)
-						if (!field.required) baseSchema = baseSchema.optional()
+						if (!shouldBeRequired) baseSchema = baseSchema.optional()
 						break
 					case 'checkbox-group':
-					case 'searchPicker': // Multi
+					case 'searchPicker':
 						if (field.multiSelect) {
 							baseSchema = z.array(z.union([z.string(), z.number()]))
-							if (field.required)
+							if (shouldBeRequired)
 								baseSchema = baseSchema.min(1, 'Selecione pelo menos uma opção')
+							else baseSchema = baseSchema.optional()
 						} else {
 							baseSchema = z.string()
+							if (!shouldBeRequired)
+								baseSchema = baseSchema.optional().or(z.literal(''))
 						}
 						break
-					default: // text, textarea, select (string), radio
+					default:
 						baseSchema = z.string()
-						if (field.required)
+						if (shouldBeRequired)
 							baseSchema = baseSchema.min(
 								1,
 								field.requiredMessage || 'Campo obrigatório',
 							)
 						else baseSchema = baseSchema.optional().or(z.literal(''))
 				}
-
 				shape[field.name] = baseSchema
 			})
-
 			return z.object(shape)
 		}, [fields, schema])
 
 		// --- 2. CONFIGURAÇÃO DO FORM ---
-
-		// Memoização dos valores padrão
 		const defaultValues = useMemo(() => {
 			return fields.reduce((acc, field) => {
 				if (data && data[field.name] !== undefined) {
-					// Tratamento especial para datas vindas de string ISO
 					if (
 						(field.type === 'date' || field.type === 'datetime') &&
 						typeof data[field.name] === 'string'
@@ -135,18 +184,20 @@ const Form = React.forwardRef(
 						acc[field.name] = data[field.name]
 					}
 				} else {
-					// Defaults base
 					switch (field.type) {
 						case 'switch':
 						case 'boolean':
-							return false
+							acc[field.name] = false
+							break
 						case 'checkbox-group':
 						case 'searchPicker':
-							return field.multiSelect ? [] : ''
+							acc[field.name] = field.multiSelect ? [] : ''
+							break
 						case 'number':
-							return '' // Input number uncontrolled lida melhor com string vazia
+							acc[field.name] = ''
+							break
 						default:
-							return ''
+							acc[field.name] = ''
 					}
 				}
 				return acc
@@ -167,7 +218,6 @@ const Form = React.forwardRef(
 		})
 
 		// --- 3. EFEITOS E HANDLERS ---
-
 		useImperativeHandle(
 			ref,
 			() => ({
@@ -179,13 +229,35 @@ const Form = React.forwardRef(
 			[reset, setValue, watch, defaultValues],
 		)
 
+		// Estado local para controle condicional
+		const [formValuesState, setFormValuesState] = useState(defaultValues)
+		const formValuesRef = useRef(defaultValues)
+		const fieldsAffectingConditionsRef = useRef(new Set())
+
+		// Identificar campos que afetam condições (campos referenciados nas funções condition)
+		useMemo(() => {
+			fieldsAffectingConditionsRef.current.clear()
+			fields.forEach((field) => {
+				if (field.condition && typeof field.condition === 'function') {
+					// Adicionar campos comuns que geralmente afetam condições
+					// Para uma solução mais robusta, poderíamos analisar o código da função
+					// Por ora, vamos detectar alguns padrões comuns
+					const conditionStr = field.condition.toString()
+					fields.forEach((otherField) => {
+						if (conditionStr.includes(otherField.name)) {
+							fieldsAffectingConditionsRef.current.add(otherField.name)
+						}
+					})
+				}
+			})
+		}, [fields])
+
 		// Sync data prop
 		useEffect(() => {
 			if (data) {
-				// Lógica simplificada de reset inteligente
+				const processedData = {}
 				Object.keys(data).forEach((key) => {
 					let val = data[key]
-					// Convert strings to Date objects for Shadcn Calendar
 					if (
 						fields.find(
 							(f) =>
@@ -196,67 +268,68 @@ const Form = React.forwardRef(
 						val = new Date(val)
 					}
 					setValue(key, val)
+					processedData[key] = val
 				})
+				// Força atualização do estado para que condições sejam reavaliadas
+				setFormValuesState((prev) => ({ ...prev, ...processedData }))
 			}
 		}, [data, setValue, fields])
 
+		// Inicialização do estado com valores do formulário
+		useEffect(() => {
+			const currentValues = watch()
+			setFormValuesState(currentValues)
+			formValuesRef.current = currentValues
+		}, [watch])
+
 		// Watch changes
 		useEffect(() => {
-			const subscription = watch((value) => onChange(value))
+			const subscription = watch((value) => {
+				const previousValues = formValuesRef.current
+				formValuesRef.current = value
+
+				let hasConditionalFieldChange = false
+				for (const fieldName of fieldsAffectingConditionsRef.current) {
+					if (previousValues[fieldName] !== value[fieldName]) {
+						hasConditionalFieldChange = true
+						break
+					}
+				}
+
+				// Atualiza o state se houver mudança em campo que afeta condições
+				if (hasConditionalFieldChange) {
+					setFormValuesState(value)
+				}
+				onChange(value)
+			})
 			return () => subscription.unsubscribe()
 		}, [watch, onChange])
-
-		const formValues = watch() // Necessário para campos condicionais
 
 		// --- 4. RENDERIZADORES ---
 
 		const renderField = (field) => {
-			// 1. Lógica Condicional
 			if (field.condition && typeof field.condition === 'function') {
-				if (!field.condition(formValues)) return null
+				// Se formValuesState estiver vazio (bug anterior), isso retornava falso/erro
+				if (!field.condition(formValuesState)) return null
 			}
 			if (field.hidden) return null
 
-			const { name, label, type, required, placeholder, disabled, options } =
-				field
+			const { name, label, type, placeholder, disabled, options } = field
 			const errorMessage = errors[name]?.message
-
-			// Grid Setup
 			const cols = field.cols || 12
-			// Classes de grid responsivas (mobile 12, desktop usa o cols definido)
-			const gridClass =
-				cols === 12 ? 'col-span-12' : `col-span-12 md:col-span-${cols}`
+			const gridClass = getGridClass(cols)
 
-			// Common Wrapper
-			const Wrapper = ({ children }) => (
-				<div className={`${gridClass} space-y-2`}>
-					{type !== 'boolean' && type !== 'switch' && type !== 'checkbox' && (
-						<Label
-							htmlFor={name}
-							className={cn(errorMessage && 'text-red-500')}
-						>
-							{label}{' '}
-							{required && showRequiredIndicator && (
-								<span className="text-red-500">*</span>
-							)}
-						</Label>
-					)}
-					{children}
-					<ErrorMessage error={errorMessage} />
-				</div>
-			)
+			// CORREÇÃO 2: Removemos 'key' daqui. A key deve ir direto no componente JSX.
+			const wrapperProps = {
+				field,
+				error: errorMessage,
+				showRequiredIndicator,
+			}
 
-			// --- STRATEGY: REGISTER (Performance Nativa) ---
-			// Usado para inputs que suportam ref nativo HTML
-
-			if (
-				type === 'text' ||
-				type === 'email' ||
-				type === 'password' ||
-				type === 'tel'
-			) {
+			// --- STRATEGY: REGISTER ---
+			if (['text', 'email', 'password', 'tel'].includes(type)) {
 				return (
-					<Wrapper key={name}>
+					<FieldWrapper key={name} {...wrapperProps}>
 						<Input
 							id={name}
 							type={type}
@@ -267,30 +340,42 @@ const Form = React.forwardRef(
 							)}
 							{...register(name)}
 						/>
-					</Wrapper>
+					</FieldWrapper>
 				)
 			}
 
 			if (type === 'number') {
 				return (
-					<Wrapper key={name}>
-						<Input
-							id={name}
-							type="number"
-							placeholder={placeholder}
-							disabled={disabled}
-							className={cn(
-								errorMessage && 'border-red-500 focus-visible:ring-red-500',
+					<FieldWrapper key={name} {...wrapperProps}>
+						<Controller
+							control={control}
+							name={name}
+							render={({ field: { onChange, value } }) => (
+								<Input
+									id={name}
+									type="number"
+									placeholder={placeholder}
+									disabled={disabled}
+									className={cn(
+										errorMessage && 'border-red-500 focus-visible:ring-red-500',
+									)}
+									value={value ?? ''}
+									onChange={(e) => onChange(e.target.value)}
+									onBlur={(e) => {
+										const numValue =
+											e.target.value === '' ? '' : Number(e.target.value)
+										onChange(numValue)
+									}}
+								/>
 							)}
-							{...register(name, { valueAsNumber: true })}
 						/>
-					</Wrapper>
+					</FieldWrapper>
 				)
 			}
 
 			if (type === 'textarea') {
 				return (
-					<Wrapper key={name}>
+					<FieldWrapper key={name} {...wrapperProps}>
 						<Textarea
 							id={name}
 							placeholder={placeholder}
@@ -301,16 +386,14 @@ const Form = React.forwardRef(
 							)}
 							{...register(name)}
 						/>
-					</Wrapper>
+					</FieldWrapper>
 				)
 			}
 
-			// --- STRATEGY: CONTROLLER (Componentes Shadcn Complexos) ---
-			// Shadcn Select, Calendar, Switch não usam inputs nativos
-
+			// --- STRATEGY: CONTROLLER ---
 			if (type === 'select' || type === 'picker') {
 				return (
-					<Wrapper key={name}>
+					<FieldWrapper key={name} {...wrapperProps}>
 						<Controller
 							control={control}
 							name={name}
@@ -335,13 +418,13 @@ const Form = React.forwardRef(
 								</Select>
 							)}
 						/>
-					</Wrapper>
+					</FieldWrapper>
 				)
 			}
 
 			if (type === 'date' || type === 'datetime') {
 				return (
-					<Wrapper key={name}>
+					<FieldWrapper key={name} {...wrapperProps}>
 						<Controller
 							control={control}
 							name={name}
@@ -381,10 +464,11 @@ const Form = React.forwardRef(
 								</Popover>
 							)}
 						/>
-					</Wrapper>
+					</FieldWrapper>
 				)
 			}
 
+			// --- Layouts Customizados ---
 			if (type === 'switch') {
 				return (
 					<div
@@ -421,7 +505,7 @@ const Form = React.forwardRef(
 
 			if (type === 'radio') {
 				return (
-					<Wrapper key={name}>
+					<FieldWrapper key={name} {...wrapperProps}>
 						<Controller
 							control={control}
 							name={name}
@@ -453,11 +537,10 @@ const Form = React.forwardRef(
 								</RadioGroup>
 							)}
 						/>
-					</Wrapper>
+					</FieldWrapper>
 				)
 			}
 
-			// Checkbox Single (Boolean)
 			if (type === 'boolean' || type === 'checkbox') {
 				return (
 					<div
@@ -478,7 +561,8 @@ const Form = React.forwardRef(
 						/>
 						<div className="space-y-1 leading-none">
 							<Label htmlFor={name}>
-								{label} {required && <span className="text-red-500">*</span>}
+								{label}{' '}
+								{field.required && <span className="text-red-500">*</span>}
 							</Label>
 							{field.description && (
 								<p className="text-sm text-muted-foreground">
@@ -491,10 +575,9 @@ const Form = React.forwardRef(
 				)
 			}
 
-			// Checkbox Group (Multi Select)
 			if (type === 'checkbox-group') {
 				return (
-					<Wrapper key={name}>
+					<FieldWrapper key={name} {...wrapperProps}>
 						<div className="grid gap-2">
 							{options?.map((item) => (
 								<Controller
@@ -502,10 +585,8 @@ const Form = React.forwardRef(
 									control={control}
 									name={name}
 									render={({ field: { onChange, value } }) => {
-										// Value é um array aqui
 										const checked =
 											Array.isArray(value) && value.includes(item.value)
-
 										return (
 											<div className="flex items-center space-x-2">
 												<Checkbox
@@ -513,13 +594,11 @@ const Form = React.forwardRef(
 													checked={checked}
 													onCheckedChange={(isChecked) => {
 														const current = Array.isArray(value) ? value : []
-														if (isChecked) {
-															onChange([...current, item.value])
-														} else {
+														if (isChecked) onChange([...current, item.value])
+														else
 															onChange(
 																current.filter((val) => val !== item.value),
 															)
-														}
 													}}
 												/>
 												<Label
@@ -534,7 +613,21 @@ const Form = React.forwardRef(
 								/>
 							))}
 						</div>
-					</Wrapper>
+					</FieldWrapper>
+				)
+			}
+
+			if (type === 'custom') {
+				return (
+					<FieldWrapper key={name} {...wrapperProps}>
+						{field.render && typeof field.render === 'function' ? (
+							field.render()
+						) : (
+							<div className="text-red-500 text-sm">
+								Campo customizado sem função render()
+							</div>
+						)}
+					</FieldWrapper>
 				)
 			}
 
@@ -543,14 +636,11 @@ const Form = React.forwardRef(
 
 		return (
 			<div className="w-full">
-				{/* Container Grid */}
 				<form
 					onSubmit={handleSubmit(onSubmit)}
-					className="grid grid-cols-12 gap-6"
+					className="grid grid-cols-12 gap-3 sm:gap-4 md:gap-6"
 				>
 					{fields.map(renderField)}
-
-					{/* Botão de Submit */}
 					{showSubmitButton && (
 						<div className="col-span-12 mt-4 flex justify-end">
 							<Button
