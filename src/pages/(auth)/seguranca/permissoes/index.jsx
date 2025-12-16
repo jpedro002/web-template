@@ -8,16 +8,31 @@ import { GenericTable } from 'src/components/table/table'
 import { Button } from 'src/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'src/components/ui/card'
 import { Badge } from 'src/components/ui/badge'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
 
 const PermissoesPage = () => {
   const [searchParams] = useSearchParams()
   const page = Number(searchParams.get('page')) || 1
   const pageSize = Number(searchParams.get('pageSize')) || 20
+  const query = searchParams.get('q') || '' 
 
   const { data, isLoading, isFetching } = usePermissoesList({
     page,
     pageSize,
+    term: query,
+    fields: ['identifier', 'name', 'category'], 
   })
+
+  useHeaderConfig({
+  breadcrumbs: [
+    { label: 'Segurança', href: '/' },
+    { label: 'Permissões' }
+  ],
+  // createPermission: 'permissions:create', 
+  // newButtonLabel: 'Nova Permissão',
+  // onNewClick: () => navigate('/seguranca/permissoes/novo'),
+  searchPlaceholder: 'Buscar permissões...'
+})
 
   const headers = useMemo(() => [
     {
@@ -49,7 +64,7 @@ const PermissoesPage = () => {
     },
   ], [])
 
-  // Ações da linha (editar, excluir, etc)
+  
   const rowActions = useMemo(() => [
     {
       label: 'Editar',
@@ -58,10 +73,9 @@ const PermissoesPage = () => {
     }
   ], [])
 
-  // Estado de paginação para a tabela (0-indexed)
   const rowCount = data?.pagination?.rowCount || 0
 
-  // ✅ Renderização condicional DEPOIS de todos os hooks
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">

@@ -1,0 +1,165 @@
+import { useAtom, useSetAtom } from 'jotai'
+import { Plus, Search } from 'lucide-react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
+import { Button } from 'src/components/ui/button'
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from 'src/components/ui/breadcrumb'
+import { Input } from 'src/components/ui/input'
+import { Separator } from 'src/components/ui/separator'
+import { SidebarTrigger } from 'src/components/ui/sidebar'
+import {
+	breadcrumbAtom,
+	createPermissionAtom,
+	newButtonLabelAtom,
+	onNewClickAtom,
+	searchPlaceholderAtom,
+	searchCurrentValueAtom,
+	searchValueAtom,
+	showSearchAtom,
+	_searchDebouncedInternalAtom,
+	_searchCurrentInternalAtom,
+} from 'src/lib/atoms'
+import { useHasPermission } from 'src/services/auth'
+
+/**
+ * Componente de header reutilizável com breadcrumb, pesquisa e botão "Novo"
+ * Controlado por atoms do Jotai com debounce e sincronização com search params
+ */
+export function AppHeader() {
+	const navigate = useNavigate()
+	const [searchParams, setSearchParams] = useSearchParams()
+	const initializedRef = useRef(false)
+	const prevSearchValueRef = useRef(null)
+	
+	const [breadcrumbs] = useAtom(breadcrumbAtom)
+	const [createPermission] = useAtom(createPermissionAtom)
+	const [newButtonLabel] = useAtom(newButtonLabelAtom)
+	const [onNewClick] = useAtom(onNewClickAtom)
+	const [searchPlaceholder] = useAtom(searchPlaceholderAtom)
+	const [searchCurrentValue] = useAtom(searchCurrentValueAtom)
+	const [searchValue, setSearchValue] = useAtom(searchValueAtom)
+	const [showSearch] = useAtom(showSearchAtom)
+	const setSearchDebouncedInternal = useSetAtom(_searchDebouncedInternalAtom)
+	const setSearchCurrentInternal = useSetAtom(_searchCurrentInternalAtom)
+
+	// Hook para verificar permissão
+	const hasCreatePermission = useHasPermission(createPermission)
+
+	// Sincronizar URL para estado na inicialização (antes do render para evitar flickering)
+	useLayoutEffect(() => {
+		if (!initializedRef.current) {
+			const q = searchParams.get('q')
+			if (q) {
+				// Seta diretamente ambos atoms internos para evitar o debounce na inicialização
+				setSearchCurrentInternal(q)
+				setSearchDebouncedInternal(q)
+				prevSearchValueRef.current = q
+			}
+			initializedRef.current = true
+		}
+	}, [searchParams, setSearchDebouncedInternal, setSearchCurrentInternal])
+
+	// Sincronizar URL quando o valor desce do debounce (mas não na inicialização)
+	useEffect(() => {
+		if (initializedRef.current && searchValue !== prevSearchValueRef.current) {
+			prevSearchValueRef.current = searchValue
+			setSearchParams((prev) => {
+				const next = new URLSearchParams(prev)
+				if (searchValue) {
+					next.set('q', searchValue)
+				} else {
+					next.delete('q')
+				}
+				return next
+			}, { replace: true })
+		}
+	}, [searchValue, setSearchParams])
+
+	const handleNewClick = () => {
+		if (onNewClick) {
+			onNewClick()
+		}
+	}
+
+	const handleSearchChange = (e) => {
+		setSearchValue(e.target.value)
+	}
+
+
+
+	return (
+		<header className="flex h-16 shrink-0 items-center gap-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+			<div className="flex items-center gap-2 px-4 flex-1">
+				<SidebarTrigger className="-ml-1" />
+				<Separator
+					orientation="vertical"
+					className="mr-2 data-[orientation=vertical]:h-4"
+				/>
+
+				{/* Breadcrumb */}
+				<Breadcrumb className="hidden md:flex">
+					<BreadcrumbList>
+						{breadcrumbs.map((item, index) => (
+							<div key={index} className="flex items-center">
+								{index > 0 && (
+									<BreadcrumbSeparator />
+								)}
+								<BreadcrumbItem>
+									{item.href ? (
+										<BreadcrumbLink
+											href={item.href}
+											onClick={(e) => {
+												e.preventDefault()
+												navigate(item.href)
+											}}
+											className="cursor-pointer"
+										>
+											{item.label}
+										</BreadcrumbLink>
+									) : (
+										<BreadcrumbPage>{item.label}</BreadcrumbPage>
+									)}
+								</BreadcrumbItem>
+							</div>
+						))}
+					</BreadcrumbList>
+				</Breadcrumb>
+			</div>
+
+		{/* Pesquisa e Botão Novo */}
+		<div className="flex items-center gap-2 px-4">
+			{/* Input de Pesquisa com Debounce e Search Params */}
+			{showSearch && (
+				<div className="relative hidden md:flex">
+					<Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						placeholder={searchPlaceholder}
+						value={searchCurrentValue}
+						onChange={handleSearchChange}
+						className="pl-8 w-64"
+					/>
+				</div>
+			)}
+
+			{/* Botão Novo - com verificação de permissão */}
+			{createPermission && hasCreatePermission && (
+				<Button
+					size="sm"
+					onClick={handleNewClick}
+					className="gap-2"
+				>
+					<Plus className="h-4 w-4" />
+					{newButtonLabel}
+				</Button>
+			)}
+		</div>
+		</header>
+	)
+}

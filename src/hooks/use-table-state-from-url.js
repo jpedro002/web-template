@@ -26,12 +26,13 @@ export function useTableStateFromUrl({ defaultPageSize = 10 } = {}) {
       ? updaterOrValue({ pageIndex, pageSize })
       : updaterOrValue
 
-    const params = {
-      page: (newPagination.pageIndex ?? 0) + 1, // Converte de 0-index para 1-index
-      pageSize: newPagination.pageSize ?? pageSize,
-    }
-    
-    setSearchParams(qs.stringify(params), { replace: true })
+    // Preserva os parâmetros existentes da URL
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('page', String((newPagination.pageIndex ?? 0) + 1)) // Converte de 0-index para 1-index
+      next.set('pageSize', String(newPagination.pageSize ?? pageSize))
+      return next
+    }, { replace: true })
   }, [setSearchParams, pageIndex, pageSize])
 
   return {

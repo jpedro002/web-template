@@ -161,6 +161,8 @@ export function useLogin() {
 		onSuccess: (data) => {
 			// Invalidar queries de sessão para atualizar
 			queryClient.invalidateQueries({ queryKey: sessionKeys.all })
+			// Disparar evento storage para atualizar useIsAuthenticated
+			window.dispatchEvent(new Event('storage'))
 		},
 		onError: (error) => {
 			// Erro já tratado pelo interceptador
@@ -196,6 +198,8 @@ export function useLogout() {
 		onSuccess: () => {
 			// Limpar apenas as queries de autenticação, não todas
 			queryClient.removeQueries({ queryKey: sessionKeys.all })
+			// Disparar evento storage para atualizar useIsAuthenticated
+			window.dispatchEvent(new Event('storage'))
 		},
 	})
 }

@@ -41,7 +41,10 @@ export function NavUser() {
 
 	const handleLogout = async () => {
 		await logout()
-		navigate('/auth')
+		// Pequeno delay para garantir que o estado seja atualizado
+		setTimeout(() => {
+			navigate('/auth')
+		}, 100)
 	}
 
 	// Gerar initials do nome
