@@ -77,6 +77,10 @@ export function AppHeader() {
 				} else {
 					next.delete('q')
 				}
+				// Resetar para página 1 quando o termo de busca muda
+				if (next.has('page')) {
+					next.set('page', '1')
+				}
 				return next
 			}, { replace: true })
 		}
