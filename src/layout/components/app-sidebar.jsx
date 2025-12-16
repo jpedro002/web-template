@@ -21,19 +21,19 @@ const data = {
 			items: [
 				{
 					title: 'Usuários',
-					url: '/usuarios',
+					url: '/seguranca/usuarios',
 					icon: 'Users',
 					permission: 'users:read',
 				},
 				{
 					title: 'Roles',
-					url: '/roles',
+					url: '/seguranca/roles',
 					icon: 'Shield',
 					permission: 'roles:read',
 				},
 				{
 					title: 'Permissões',
-					url: '/permissoes',
+					url: '/seguranca/permissoes',
 					icon: 'Lock',
 					permission: 'permissions:read',
 				},

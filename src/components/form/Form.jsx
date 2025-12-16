@@ -103,9 +103,11 @@ const Form = React.forwardRef(
 			showRequiredIndicator = true,
 			onSubmit = () => {},
 			onChange = () => {},
+			onFormStateChange = () => {},
 			isLoading = false,
 			submitLabel = 'Salvar',
 			showSubmitButton = true,
+			onFormReady = () => {},
 		},
 		ref,
 	) => {
@@ -214,7 +216,7 @@ const Form = React.forwardRef(
 			watch,
 			reset,
 			setValue,
-			formState: { errors },
+			formState,
 		} = useForm({
 			resolver: zodResolver(generatedSchema),
 			defaultValues,
@@ -231,6 +233,16 @@ const Form = React.forwardRef(
 			}),
 			[reset, setValue, watch, defaultValues],
 		)
+
+		// Chamar onFormReady quando o form montar
+		useEffect(() => {
+			onFormReady({
+				reset: (vals) => reset(vals || defaultValues),
+				setValue,
+				watch,
+				getValues: watch
+			})
+		}, []) // Executar apenas uma vez na montagem 
 
 		// Estado local para controle condicional
 		const [formValuesState, setFormValuesState] = useState(defaultValues)
@@ -304,9 +316,11 @@ const Form = React.forwardRef(
 					setFormValuesState(value)
 				}
 				onChange(value)
+				// Notifica mudanças do formState em tempo real
+				onFormStateChange(formState)
 			})
 			return () => subscription.unsubscribe()
-		}, [watch, onChange])
+		}, [watch, onChange, onFormStateChange, formState])
 
 		// --- 4. RENDERIZADORES ---
 
@@ -318,7 +332,7 @@ const Form = React.forwardRef(
 			if (field.hidden) return null
 
 			const { name, label, type, placeholder, disabled, options } = field
-			const errorMessage = errors[name]?.message
+			const errorMessage = formState.errors[name]?.message
 			const cols = field.cols || 12
 			const gridClass = getGridClass(cols)
 

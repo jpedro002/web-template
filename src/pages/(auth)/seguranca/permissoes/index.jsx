@@ -53,13 +53,9 @@ const PermissoesPage = () => {
   const rowActions = useMemo(() => [
     {
       label: 'Editar',
-      onClick: (row) => console.log('Editar:', row),
-    },
-    {
-      label: 'Excluir',
-      onClick: (row) => console.log('Excluir:', row),
-      variant: 'destructive',
-    },
+      to: (row) => `/seguranca/permissoes/${row.id}`,
+      permission: 'permissions:update',
+    }
   ], [])
 
   // Estado de paginação para a tabela (0-indexed)
@@ -92,10 +88,7 @@ const PermissoesPage = () => {
               </p>
             </div>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Permissão
-          </Button>
+          
         </div>
 
         {/* Tabela */}
