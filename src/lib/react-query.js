@@ -16,9 +16,8 @@ const handleAuthError = (error) => {
 		localStorage.removeItem('session')
 		sessionStorage.removeItem('token')
 
-		// Silenciosamente redirecionar se não estiver já em /auth
 		if (!window.location.pathname.includes('/auth')) {
-			window.location.href = '/auth/login'
+			window.location.href = '/auth'
 		}
 		return
 	}
