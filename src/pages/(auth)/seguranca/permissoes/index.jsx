@@ -10,12 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'src/c
 import { Badge } from 'src/components/ui/badge'
 import { useHeaderConfig } from 'src/hooks/use-header-config'
 import { PermissionRoute } from 'src/components/protected-route'
+import { useTableStateFromUrl } from 'src/hooks/use-table-state-from-url'
 
 const PermissoesPage = () => {
   const [searchParams] = useSearchParams()
-  const page = Number(searchParams.get('page')) || 1
-  const pageSize = Number(searchParams.get('pageSize')) || 20
   const query = searchParams.get('q') || '' 
+  
+  // 🚀 Hook para sincronizar paginação com a URL (usado para a query da API)
+  const { page, pageSize } = useTableStateFromUrl({ defaultPageSize: 20 })
 
   const { data, isLoading, isFetching } = usePermissoesList({
     page,
@@ -122,7 +124,7 @@ const PermissoesPage = () => {
               rowActions={rowActions}
               selectableRows={false}
               pagination={{
-                pageSize,
+                pageSize: 20,
                 rowCount,
                 manageUrlState: true, // 🚀 A tabela gerencia a URL internamente
               }}

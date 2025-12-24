@@ -67,9 +67,9 @@ export function GenericTable({
 				}
 			: localPaginationState
 
-	// Calcula o total de páginas
+	// Calcula o total de páginas usando o pageSize correto do estado
 	const pageCount = pagination?.rowCount
-		? Math.ceil(pagination.rowCount / pagination.pageSize)
+		? Math.ceil(pagination.rowCount / paginationState.pageSize)
 		: undefined
 
 	// Constrói a configuração da tabela
@@ -78,6 +78,7 @@ export function GenericTable({
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		onRowSelectionChange: setRowSelection,
+		autoResetPageIndex: false, // 🚀 Previne reset automático da página quando dados mudam
 		state: {
 			rowSelection,
 			pagination: paginationState,

@@ -1,6 +1,5 @@
 import { useSearchParams } from 'react-router'
 import { useCallback } from 'react'
-import qs from 'qs'
 
 /**
  * Hook customizado para gerenciar estado de paginação através da URL
@@ -21,19 +20,23 @@ export function useTableStateFromUrl({ defaultPageSize = 10 } = {}) {
 
   // Função para atualizar a URL quando a paginação muda
   const handlePaginationChange = useCallback((updaterOrValue) => {
-    // TanStack Table pode passar uma função updater ou um valor direto
-    const newPagination = typeof updaterOrValue === 'function'
-      ? updaterOrValue({ pageIndex, pageSize })
-      : updaterOrValue
-
-    // Preserva os parâmetros existentes da URL
     setSearchParams((prev) => {
+      // Lê os valores atuais da URL dentro da função
+      const currentPage = Number(prev.get('page')) || 1
+      const currentPageSize = Number(prev.get('pageSize')) || defaultPageSize
+      const currentPageIndex = currentPage - 1
+
+      // TanStack Table pode passar uma função updater ou um valor direto
+      const newPagination = typeof updaterOrValue === 'function'
+        ? updaterOrValue({ pageIndex: currentPageIndex, pageSize: currentPageSize })
+        : updaterOrValue
+
       const next = new URLSearchParams(prev)
       next.set('page', String((newPagination.pageIndex ?? 0) + 1)) // Converte de 0-index para 1-index
-      next.set('pageSize', String(newPagination.pageSize ?? pageSize))
+      next.set('pageSize', String(newPagination.pageSize ?? currentPageSize))
       return next
     }, { replace: true })
-  }, [setSearchParams, pageIndex, pageSize])
+  }, [setSearchParams, defaultPageSize])
 
   return {
     pageIndex,

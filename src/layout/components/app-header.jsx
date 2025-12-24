@@ -68,12 +68,17 @@ export function AppHeader() {
 
 	// Sincronizar URL quando o valor desce do debounce (mas não na inicialização)
 	useEffect(() => {
-		if (initializedRef.current && searchValue !== prevSearchValueRef.current) {
-			prevSearchValueRef.current = searchValue
+		// Só atualiza se já inicializou E se o valor realmente mudou
+		// Usa comparação com || '' para tratar null/undefined como string vazia
+		const currentValue = searchValue || ''
+		const prevValue = prevSearchValueRef.current || ''
+		
+		if (initializedRef.current && currentValue !== prevValue) {
+			prevSearchValueRef.current = currentValue
 			setSearchParams((prev) => {
 				const next = new URLSearchParams(prev)
-				if (searchValue) {
-					next.set('q', searchValue)
+				if (currentValue) {
+					next.set('q', currentValue)
 				} else {
 					next.delete('q')
 				}
