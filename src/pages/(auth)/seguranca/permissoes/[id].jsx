@@ -1,8 +1,10 @@
+import { ArrowLeft, ChevronLeft } from 'lucide-react'
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
 import Form from 'src/components/form/Form'
 import { Button } from 'src/components/ui/button'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
 import { authService } from 'src/services/auth'
 import { usePermissoes, usePermissoesUpdate } from 'src/services/permissoes'
 
@@ -70,11 +72,17 @@ const PermissaoPage = () => {
 		setFormMethods(methods)
 	}
 
-	// Função chamada quando o estado do form muda em tempo real
-	const handleFormStateChange = (newFormState) => {
-		// Agora você tem acesso ao formState atualizado em tempo real
-		console.log('FormState atualizado:', newFormState)
-	}
+	 useHeaderConfig({
+	  breadcrumbs: [
+		{ label: 'Segurança', href: '/' },
+		{ label: 'Permissões', href: '/seguranca/permissoes' },
+		{ label: permission ? permission.identifier : 'Carregando...' },
+
+	  ],
+	  showSearch: false,
+	})
+
+	
 
 	const handleSubmit = (formData) => {
 		updateMutation.mutate(
@@ -134,8 +142,10 @@ const PermissaoPage = () => {
 					</h1>
 					<p className="text-muted-foreground mt-1">ID: {id}</p>
 				</div>
-				<Button variant="outline" onClick={() => navigate(-1)}>
-					← Voltar
+				<Button variant="outline" asChild>
+					<Link to="/seguranca/permissoes">
+						<ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+					</Link>
 				</Button>
 			</div>
 
@@ -148,7 +158,6 @@ const PermissaoPage = () => {
 					submitLabel="Salvar Alterações"
 					showSubmitButton={true}
 					onFormReady={handleFormReady}
-					onFormStateChange={handleFormStateChange}
 				/>
 			</div>
 		</div>

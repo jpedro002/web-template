@@ -34,7 +34,7 @@ export const searchPlaceholderAtom = atom('Pesquisar...')
 /**
  * Atom para controlar se a busca deve ser visível
  */
-export const showSearchAtom = atom(true)
+export const showSearchAtom = atom(false)
 
 /**
  * Atoms para pesquisa com debounce (500ms)

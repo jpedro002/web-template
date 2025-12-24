@@ -387,40 +387,75 @@ export function createBaseService(endpoint, queryKey) {
         /**
          * Hook para deletar um registro
          * 
+         * IMPORTANTE: Para adicionar confirmação de exclusão, use o hook useDeleteWithConfirmation:
+         * 
          * @param {Object} [options={}] - Opções do React Query
          * @returns {import('@tanstack/react-query').UseMutationResult}
          * 
          * @example
-         * // Uso básico
+         * // ✅ RECOMENDADO: Com confirmação via AlertDialog
+         * import { useDeleteWithConfirmation } from 'src/hooks/use-delete-with-confirmation'
+         * import { DeleteConfirmDialog } from 'src/components/delete-confirm-dialog'
+         * 
+         * const deleteMutation = useUsuariosDelete()
+         * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
+         *   title: 'Excluir Usuário',
+         *   description: 'Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.',
+         *   confirmText: 'Sim, excluir',
+         *   cancelText: 'Cancelar'
+         * })
+         * 
+         * // No JSX:
+         * <Button 
+         *   variant="destructive" 
+         *   onClick={() => deleteConfirmation.confirmDelete(usuario.id)}
+         * >
+         *   Excluir
+         * </Button>
+         * <DeleteConfirmDialog {...deleteConfirmation} />
+         * 
+         * @example
+         * // Com descrição dinâmica baseada no item
+         * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
+         *   title: 'Excluir Usuário',
+         *   getDescription: (item) => `Deseja excluir o usuário "${item.nome}"?`,
+         * })
+         * 
+         * // Passar o objeto completo
+         * <Button onClick={() => deleteConfirmation.confirmDelete(usuario)}>
+         *   Excluir
+         * </Button>
+         * 
+         * @example
+         * // ⚠️  Uso direto (sem confirmação - não recomendado)
          * const deleteMutation = useDelete()
          * deleteMutation.mutate('123')
          * 
          * @example
-         * // Com confirmação
+         * // Com callbacks personalizados
          * const deleteMutation = useDelete({
          *   onSuccess: () => {
          *     toast.success('Deletado com sucesso!')
          *     navigate('/usuarios')
+         *   },
+         *   onError: (error) => {
+         *     toast.error(`Erro ao deletar: ${error.message}`)
          *   }
          * })
          * 
-         * const handleDelete = (id) => {
-         *   if (confirm('Tem certeza?')) {
-         *     deleteMutation.mutate(id)
-         *   }
-         * }
-         * 
          * @example
-         * // Em tabela
-         * const columns = [
-         *   // ... outras colunas
+         * // Em ações de tabela (GenericTable)
+         * const actions = [
          *   {
-         *     id: 'actions',
-         *     cell: ({ row }) => (
-         *       <Button onClick={() => deleteMutation.mutate(row.original.id)}>
-         *         Excluir
-         *       </Button>
-         *     )
+         *     label: 'Editar',
+         *     icon: Edit,
+         *     to: (row) => `/usuarios/${row.id}`,
+         *   },
+         *   {
+         *     label: 'Excluir',
+         *     icon: Trash2,
+         *     variant: 'destructive',
+         *     onClick: (row) => deleteConfirmation.confirmDelete(row),
          *   }
          * ]
          */

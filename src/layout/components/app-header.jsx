@@ -99,7 +99,7 @@ export function AppHeader() {
 
 
 	return (
-		<header className="flex h-16 shrink-0 items-center gap-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+		<header className="flex h-fit md:h-16 shrink-0 items-center gap-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
 			<div className="flex items-center gap-2 px-4 flex-1">
 				<SidebarTrigger className="-ml-1" />
 				<Separator
@@ -128,7 +128,7 @@ export function AppHeader() {
 											{item.label}
 										</BreadcrumbLink>
 									) : (
-										<BreadcrumbPage>{item.label}</BreadcrumbPage>
+										<BreadcrumbPage className="text-muted-foreground">{item.label}</BreadcrumbPage>
 									)}
 								</BreadcrumbItem>
 							</div>
@@ -138,16 +138,16 @@ export function AppHeader() {
 			</div>
 
 		{/* Pesquisa e Botão Novo */}
-		<div className="flex items-center gap-2 px-4">
+		<div className="flex items-center gap-2 px-4 py-2 md:py-0">
 			{/* Input de Pesquisa com Debounce e Search Params */}
 			{showSearch && (
-				<div className="relative hidden md:flex">
-					<Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<div className="relative flex flex-1 md:flex-none">
+					<Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
 					<Input
 						placeholder={searchPlaceholder}
 						value={searchCurrentValue}
 						onChange={handleSearchChange}
-						className="pl-8 w-64"
+						className="pl-8 w-full md:w-64"
 					/>
 				</div>
 			)}
@@ -157,10 +157,11 @@ export function AppHeader() {
 				<Button
 					size="sm"
 					onClick={handleNewClick}
-					className="gap-2"
+					className="gap-2 shrink-0"
 				>
 					<Plus className="h-4 w-4" />
-					{newButtonLabel}
+					<span className="hidden sm:inline">{newButtonLabel}</span>
+					
 				</Button>
 			)}
 		</div>

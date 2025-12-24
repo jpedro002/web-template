@@ -28,15 +28,21 @@ const ActionItem = ({ action, row }) => {
 
 	if (!hasRequiredPermission || !isVisible) return null
 
+	// Aplica classes destrutivas se variant='destructive'
+	const isDestructive = action.variant === 'destructive'
+	const destructiveClass = isDestructive 
+		? 'text-destructive focus:text-destructive focus:bg-destructive/10' 
+		: ''
+	const className = [action.className, destructiveClass].filter(Boolean).join(' ')
+	
 	// Renderização: Link ou Botão
+	const iconClassName = isDestructive ? 'mr-2 h-4 w-4 text-destructive' : 'mr-2 h-4 w-4'
 	const content = (
 		<>
-			{action.icon && <action.icon className="mr-2 h-4 w-4" />}
+			{action.icon && <action.icon className={iconClassName} />}
 			{action.label}
 		</>
 	)
-
-	const className = action.className || '' // Para cores como text-red-600
 
 	if (action.to) {
 		return (

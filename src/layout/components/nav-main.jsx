@@ -28,12 +28,6 @@ export function NavMain({ items }) {
 	const { state } = useSidebar()
 	const isCollapsed = state === 'collapsed'
 
-	// Filtrar itens baseado em permissão
-	const filteredItems = items.filter((item) => {
-		if (!item.permission) return true // Se não tem permission, mostra sempre
-		return useHasPermission(item.permission)
-	})
-
 	// Filtrar subitens baseado em permissão
 	const getFilteredSubItems = (subItems) => {
 		if (!subItems) return []
@@ -42,6 +36,23 @@ export function NavMain({ items }) {
 			return useHasPermission(subItem.permission)
 		})
 	}
+
+	// Filtrar itens baseado em permissão E se tem subitens visíveis
+	const filteredItems = items.filter((item) => {
+		// Se tem permissão específica, verificar
+		if (item.permission && !useHasPermission(item.permission)) {
+			return false
+		}
+
+		// Se tem subitens, verificar se pelo menos um é visível
+		if (item.items && item.items.length > 0) {
+			const visibleSubItems = getFilteredSubItems(item.items)
+			return visibleSubItems.length > 0
+		}
+
+		// Item sem subitens e sem permissão específica (ou com permissão válida)
+		return true
+	})
 
 	if (filteredItems.length === 0) {
 		return null

@@ -9,6 +9,7 @@ import { Button } from 'src/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'src/components/ui/card'
 import { Badge } from 'src/components/ui/badge'
 import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { PermissionRoute } from 'src/components/protected-route'
 
 const PermissoesPage = () => {
   const [searchParams] = useSearchParams()
@@ -28,9 +29,7 @@ const PermissoesPage = () => {
     { label: 'Segurança', href: '/' },
     { label: 'Permissões' }
   ],
-  // createPermission: 'permissions:create', 
-  // newButtonLabel: 'Nova Permissão',
-  // onNewClick: () => navigate('/seguranca/permissoes/novo'),
+
   searchPlaceholder: 'Buscar permissões...'
 })
 
@@ -83,9 +82,8 @@ const PermissoesPage = () => {
       </div>
     )
   }
-
   return (
-    <>
+    <PermissionRoute permission="permissions:read">
       <Helmet>
         <title>Permissões</title>
       </Helmet>
@@ -132,7 +130,7 @@ const PermissoesPage = () => {
           </CardContent>
         </Card>
       </div>
-    </>
+    </PermissionRoute>
   )
 }
 

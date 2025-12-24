@@ -1,6 +1,7 @@
 'use client'
 
 import { Command } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import {
 	Sidebar,
 	SidebarContent,
@@ -43,8 +44,24 @@ const data = {
 }
 
 export function AppSidebar({ ...props }) {
+	const [defaultOpen, setDefaultOpen] = useState(true)
+
+	useEffect(() => {
+		// Definir sidebar colapsada por padrão em telas menores que lg (1024px)
+		const handleResize = () => {
+			setDefaultOpen(window.innerWidth >= 1024)
+		}
+
+		// Executar na inicialização
+		handleResize()
+
+		// Adicionar listener para mudanças de tamanho
+		window.addEventListener('resize', handleResize)
+		return () => window.removeEventListener('resize', handleResize)
+	}, [])
+
 	return (
-		<Sidebar collapsible="icon" {...props}>
+		<Sidebar collapsible="icon" defaultOpen={defaultOpen} {...props}>
 			<SidebarHeader className="flex flex-row">
 				<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
 					<Command className="size-4" />

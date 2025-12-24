@@ -47,12 +47,26 @@ const authService = {
 
 	/**
 	 * Obter sessão atual do usuário
-	 * Retorna dados do usuário autenticado
+	 * Retorna dados do usuário autenticado e atualiza localStorage
 	 */
 	getSession: async () => {
 		const response = await api.get(`${BASE_URL}/session`)
-		// API retorna { usuario }, normalizamos para { user }
-		return { user: response.data.usuario }
+		const { usuario } = response.data // API retorna "usuario" em português
+
+		// Atualizar localStorage com dados mais recentes do servidor
+		localStorage.setItem(
+			'permissions',
+			JSON.stringify(usuario.permissions || []),
+		)
+		localStorage.setItem('roles', JSON.stringify(usuario.roles || []))
+		localStorage.setItem('session', JSON.stringify(usuario))
+
+		// Se vier um novo token na resposta, atualizar também
+		if (response.data.token) {
+			localStorage.setItem('token', response.data.token)
+		}
+
+		return { user: usuario }
 	},
 
 	/**
@@ -181,7 +195,7 @@ export function useSession(enabled = true) {
 		queryKey: sessionKeys.get(),
 		queryFn: authService.getSession,
 		enabled: enabled && authService.isAuthenticated(),
-		staleTime: 1000 * 60 * 5, // 5 minutos
+		staleTime: 0, // Sempre buscar dados frescos	
 		retry: 1, // Tentar 1 vez em caso de erro
 	})
 }

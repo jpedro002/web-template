@@ -24,18 +24,19 @@ export function DataTablePagination({
 	onPageSizeChange,
 }) {
 	return (
-		<div className="flex items-center justify-end px-2">
+		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2 py-4">
 			
-			<div className="flex items-center space-x-6 lg:space-x-8">
-				<div className="flex items-center space-x-2">
-					<p className="text-sm font-medium">Linhas por página</p>
+			<div className="flex items-center gap-2 sm:gap-4 lg:gap-6 flex-wrap sm:flex-nowrap">
+				{/* Seletor de Linhas por Página */}
+				<div className="flex items-center gap-2">
+					<p className="text-xs sm:text-sm font-medium whitespace-nowrap">Linhas:</p>
 					<Select
 						value={`${pageSize}`}
 						onValueChange={(value) => {
 							onPageSizeChange?.(Number(value))
 						}}
 					>
-						<SelectTrigger className="h-8 w-[70px]">
+						<SelectTrigger className="h-8 w-16 sm:w-[70px]">
 							<SelectValue placeholder={pageSize} />
 						</SelectTrigger>
 						<SelectContent side="top">
@@ -47,47 +48,58 @@ export function DataTablePagination({
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="flex w-[100px] items-center justify-center text-sm font-medium">
-					Página {pageIndex + 1} de {pageCount}
+
+				{/* Indicador de Página */}
+				<div className="text-xs sm:text-sm font-medium whitespace-nowrap">
+					<span className="hidden sm:inline">Página </span>
+					<span>{pageIndex + 1}</span>
+					<span className="hidden sm:inline"> de {pageCount}</span>
+					<span className="sm:hidden">/{pageCount}</span>
 				</div>
-				<div className="flex items-center space-x-2">
-					<Button
-						variant="outline"
-						className="hidden h-8 w-8 p-0 lg:flex"
-						onClick={() => onPageChange?.(0)}
-						disabled={!canPreviousPage}
-					>
-						<span className="sr-only">Ir para primeira página</span>
-						<ChevronsLeft className="h-4 w-4" />
-					</Button>
-					<Button
-						variant="outline"
-						className="h-8 w-8 p-0"
-						onClick={() => onPageChange?.(pageIndex - 1)}
-						disabled={!canPreviousPage}
-					>
-						<span className="sr-only">Ir para página anterior</span>
-						<ChevronLeft className="h-4 w-4" />
-					</Button>
-					<Button
-						variant="outline"
-						className="h-8 w-8 p-0"
-						onClick={() => onPageChange?.(pageIndex + 1)}
-						disabled={!canNextPage}
-					>
-						<span className="sr-only">Ir para próxima página</span>
-						<ChevronRight className="h-4 w-4" />
-					</Button>
-					<Button
-						variant="outline"
-						className="hidden h-8 w-8 p-0 lg:flex"
-						onClick={() => onPageChange?.(pageCount - 1)}
-						disabled={!canNextPage}
-					>
-						<span className="sr-only">Ir para última página</span>
-						<ChevronsRight className="h-4 w-4" />
-					</Button>
-				</div>
+			</div>
+
+			{/* Controles de Navegação */}
+			<div className="flex items-center gap-1 sm:gap-2">
+				<Button
+					variant="outline"
+					className="hidden h-8 w-8 p-0 lg:flex"
+					onClick={() => onPageChange?.(0)}
+					disabled={!canPreviousPage}
+					title="Primeira página"
+				>
+					<span className="sr-only">Ir para primeira página</span>
+					<ChevronsLeft className="h-4 w-4" />
+				</Button>
+				<Button
+					variant="outline"
+					className="h-8 w-8 p-0"
+					onClick={() => onPageChange?.(pageIndex - 1)}
+					disabled={!canPreviousPage}
+					title="Página anterior"
+				>
+					<span className="sr-only">Ir para página anterior</span>
+					<ChevronLeft className="h-4 w-4" />
+				</Button>
+				<Button
+					variant="outline"
+					className="h-8 w-8 p-0"
+					onClick={() => onPageChange?.(pageIndex + 1)}
+					disabled={!canNextPage}
+					title="Próxima página"
+				>
+					<span className="sr-only">Ir para próxima página</span>
+					<ChevronRight className="h-4 w-4" />
+				</Button>
+				<Button
+					variant="outline"
+					className="hidden h-8 w-8 p-0 lg:flex"
+					onClick={() => onPageChange?.(pageCount - 1)}
+					disabled={!canNextPage}
+					title="Última página"
+				>
+					<span className="sr-only">Ir para última página</span>
+					<ChevronsRight className="h-4 w-4" />
+				</Button>
 			</div>
 		</div>
 	)
