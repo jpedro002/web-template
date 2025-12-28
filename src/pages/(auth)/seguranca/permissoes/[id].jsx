@@ -134,7 +134,7 @@ const PermissaoPage = () => {
     }
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 gap-4 p-4">
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-3xl font-bold tracking-tight">

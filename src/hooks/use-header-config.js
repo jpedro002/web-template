@@ -15,6 +15,7 @@ import {
 	searchPlaceholderAtom,
 	searchValueAtom,
 	showSearchAtom,
+	showHeaderAtom,
 } from 'src/lib/atoms'
 
 /**
@@ -30,7 +31,8 @@ import {
  *   createPermission: 'usuarios:create',
  *   newButtonLabel: 'Novo Usuário',
  *   onNewClick: () => navigate('/usuarios/novo'),
- *   searchPlaceholder: 'Buscar usuários...'
+ *   searchPlaceholder: 'Buscar usuários...',
+ *   showHeader: false  // Para ocultar completamente o header
  * })
  */
 export function useHeaderConfig({
@@ -40,6 +42,7 @@ export function useHeaderConfig({
 	onNewClick = null,
 	searchPlaceholder = 'Pesquisar...',
 	showSearch = true,
+	showHeader = true,
 }) {
 	const setBreadcrumbs = useSetAtom(breadcrumbAtom)
 	const setCreatePermission = useSetAtom(createPermissionAtom)
@@ -48,6 +51,7 @@ export function useHeaderConfig({
 	const setSearchPlaceholder = useSetAtom(searchPlaceholderAtom)
 	const setSearchValue = useSetAtom(searchValueAtom)
 	const setShowSearch = useSetAtom(showSearchAtom)
+	const setShowHeader = useSetAtom(showHeaderAtom)
 
 	useEffect(() => {
 		setBreadcrumbs(breadcrumbs)
@@ -56,6 +60,7 @@ export function useHeaderConfig({
 		setOnNewClick(() => onNewClick)
 		setSearchPlaceholder(searchPlaceholder)
 		setShowSearch(showSearch)
+		setShowHeader(showHeader)
 
 		// Limpar ao desmontar
 		return () => {
@@ -65,6 +70,7 @@ export function useHeaderConfig({
 			setOnNewClick(null)
 			setSearchPlaceholder('Pesquisar...')
 			setShowSearch(true)
+			setShowHeader(true)
 			// Nota: Não resetar searchValue pois é controlado pela sincronização de URL
 		}
 	}, [
@@ -74,12 +80,14 @@ export function useHeaderConfig({
 		onNewClick,
 		searchPlaceholder,
 		showSearch,
+		showHeader,
 		setBreadcrumbs,
 		setCreatePermission,
 		setNewButtonLabel,
 		setOnNewClick,
 		setSearchPlaceholder,
 		setShowSearch,
+		setShowHeader,
 	])
 }
 

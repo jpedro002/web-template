@@ -23,6 +23,7 @@ import {
 	searchCurrentValueAtom,
 	searchValueAtom,
 	showSearchAtom,
+	showHeaderAtom,
 	_searchDebouncedInternalAtom,
 	_searchCurrentInternalAtom,
 } from 'src/lib/atoms'
@@ -46,6 +47,7 @@ export function AppHeader() {
 	const [searchCurrentValue] = useAtom(searchCurrentValueAtom)
 	const [searchValue, setSearchValue] = useAtom(searchValueAtom)
 	const [showSearch] = useAtom(showSearchAtom)
+	const [showHeader] = useAtom(showHeaderAtom)
 	const setSearchDebouncedInternal = useSetAtom(_searchDebouncedInternalAtom)
 	const setSearchCurrentInternal = useSetAtom(_searchCurrentInternalAtom)
 
@@ -99,6 +101,11 @@ export function AppHeader() {
 
 	const handleSearchChange = (e) => {
 		setSearchValue(e.target.value)
+	}
+
+	// Se o header deve ser oculto, não renderizar nada
+	if (!showHeader) {
+		return null
 	}
 
 

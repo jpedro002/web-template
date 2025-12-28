@@ -37,6 +37,11 @@ export const searchPlaceholderAtom = atom('Pesquisar...')
 export const showSearchAtom = atom(false)
 
 /**
+ * Atom para controlar se o header deve ser visível
+ */
+export const showHeaderAtom = atom(true)
+
+/**
  * Atoms para pesquisa com debounce (500ms)
  * - searchCurrentValueAtom: valor enquanto está digitando
  * - searchValueAtom: valor após debounce (sincronizado com URL)

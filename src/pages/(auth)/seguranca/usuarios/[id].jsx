@@ -237,7 +237,7 @@ const UsuarioDetailsPage = () => {
 	const assignedRolesData = rolesData?.data?.filter(role => selectedRoles.includes(role.id)) || []
 
 	return (
-		<div className="min-h-screen py-8">
+		<div className="min-h-screen gap-4 p-4 py-8">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				{/* Breadcrumb/Voltar */}
 				<Button

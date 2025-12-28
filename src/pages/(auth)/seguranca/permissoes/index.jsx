@@ -28,7 +28,7 @@ const PermissoesPage = () => {
 
   useHeaderConfig({
   breadcrumbs: [
-    { label: 'Segurança', href: '/' },
+    { label: 'Segurança' },
     { label: 'Permissões' }
   ],
 
@@ -90,7 +90,7 @@ const PermissoesPage = () => {
         <title>Permissões</title>
       </Helmet>
 
-      <div className="space-y-6">
+      <div className="space-y-6 gap-4 p-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

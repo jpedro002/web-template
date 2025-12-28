@@ -61,7 +61,7 @@ export function AppSidebar({ ...props }) {
 	}, [])
 
 	return (
-		<Sidebar collapsible="icon" defaultOpen={defaultOpen} {...props}>
+		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader className="flex flex-row">
 				<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
 					<Command className="size-4" />
