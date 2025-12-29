@@ -40,6 +40,19 @@ const data = {
 				},
 			],
 		},
+		{
+			title: 'Teste',
+			icon: 'FileText',
+			permission: null,
+			items: [
+				{
+					title: 'Cards',
+					url: '/teste/cards',
+					icon: 'FileText',
+					permission: 'cards:read',
+				},
+			],
+		},
 	],
 }
 

@@ -460,7 +460,7 @@ const UsuarioDetailsPage = () => {
 					</Card>
 
 					{/* Botões de Ação */}
-					<div className="flex gap-3 pt-4">
+					<div className="flex flex-col sm:flex-row gap-3 pt-4">
 						<Button
 							type="button"
 							variant="outline"

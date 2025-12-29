@@ -10,7 +10,7 @@ export default function Page() {
 	useHeaderConfig({
 		breadcrumbs: [],
 		showSearch: false,
-		showHeader: false,
+		showHeader: true,
 	})
 	// Dados para os gráficos
 	const chartData = [
