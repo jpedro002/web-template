@@ -4,7 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="/src/index.css" rel="stylesheet">
+  
+  <!-- DNS Prefetch e Preconnect para APIs e CDNs -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  
+  <!-- Preload CSS crítico -->
+  <link rel="preload" href="/src/index.css" as="style" />
+  <link href="/src/index.css" rel="stylesheet" />
+  
   <title>web</title>
 </head>
 
