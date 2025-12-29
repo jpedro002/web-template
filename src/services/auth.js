@@ -195,7 +195,7 @@ export function useSession(enabled = true) {
 		queryKey: sessionKeys.get(),
 		queryFn: authService.getSession,
 		enabled: enabled && authService.isAuthenticated(),
-		staleTime: 1000 * 60 * 5,
+		staleTime: 0,
 		retry: 1, // Tentar 1 vez em caso de erro
 	})
 }
