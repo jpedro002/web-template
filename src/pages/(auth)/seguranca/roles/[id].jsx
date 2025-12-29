@@ -1,32 +1,38 @@
-import { useParams, useNavigate } from 'react-router'
-import { useState, useEffect, useMemo } from 'react'
-import { Save, Shield, Menu, ChevronLeft } from 'lucide-react'
-import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useRoles, useRolesCreate, useRolesUpdate } from 'src/services/roles'
-import { usePermissoesListAll } from 'src/services/permissoes'
+import { ChevronLeft, Menu, Save, Shield } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useNavigate, useParams } from 'react-router'
 import { Button } from 'src/components/ui/button'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from 'src/components/ui/card'
+import { Checkbox } from 'src/components/ui/checkbox'
 import { Input } from 'src/components/ui/input'
 import { Label } from 'src/components/ui/label'
 import { Switch } from 'src/components/ui/switch'
-import { Checkbox } from 'src/components/ui/checkbox'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'src/components/ui/card'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
 import { toast } from 'src/lib/toast'
 import { cn } from 'src/lib/utils'
-import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { usePermissoesListAll } from 'src/services/permissoes'
+import { useRoles, useRolesCreate, useRolesUpdate } from 'src/services/roles'
+import { z } from 'zod'
 
 // =========================
 // SCHEMA ZOD
 // =========================
 const roleFormSchema = z.object({
-	name: z.string()
+	name: z
+		.string()
 		.min(1, 'Nome do perfil é obrigatório')
 		.min(3, 'Nome deve ter no mínimo 3 caracteres')
 		.max(100, 'Nome não pode ter mais de 100 caracteres'),
 	active: z.boolean().default(true),
-	permissionIds: z.array(z.string())
-		.min(1, 'Selecione ao menos uma permissão')
+	permissionIds: z.array(z.string()).min(1, 'Selecione ao menos uma permissão'),
 })
 
 const RoleDetailsPage = () => {
@@ -35,15 +41,13 @@ const RoleDetailsPage = () => {
 	const isEditing = id !== 'novo'
 
 	useHeaderConfig({
-			breadcrumbs: [
-				{ label: 'Segurança', href: '/' },
-				{ label: 'Roles', href: '/seguranca/roles' },
-				{ label: isEditing ? 'Editar Role' : 'Nova Role' }
-				
-			],
-			showSearch: false,
-			
-		})
+		breadcrumbs: [
+			{ label: 'Segurança', href: '/' },
+			{ label: 'Roles', href: '/seguranca/roles' },
+			{ label: isEditing ? 'Editar Role' : 'Nova Role' },
+		],
+		showSearch: false,
+	})
 
 	// Setup React Hook Form
 	const {
@@ -60,19 +64,19 @@ const RoleDetailsPage = () => {
 			name: '',
 			active: true,
 			permissionIds: [],
-		}
+		},
 	})
 
 	const selectedPermissions = watch('permissionIds')
 
 	// Buscar dados da role (se estiver editando)
-	const { data: roleData, isLoading: isLoadingRole } = useRoles(
-		id,
-		{ enabled: isEditing }
-	)
+	const { data: roleData, isLoading: isLoadingRole } = useRoles(id, {
+		enabled: isEditing,
+	})
 
 	// Buscar todas as permissões
-	const { data: permissoesData, isLoading: isLoadingPermissoes } = usePermissoesListAll()
+	const { data: permissoesData, isLoading: isLoadingPermissoes } =
+		usePermissoesListAll()
 
 	// Mutations
 	const createMutation = useRolesCreate()
@@ -84,7 +88,8 @@ const RoleDetailsPage = () => {
 			reset({
 				name: roleData.name || '',
 				active: roleData.active ?? true,
-				permissionIds: roleData.rolePermissions?.map(rp => rp.permission.id) || []
+				permissionIds:
+					roleData.rolePermissions?.map((rp) => rp.permission.id) || [],
 			})
 		}
 	}, [roleData, reset])
@@ -94,21 +99,21 @@ const RoleDetailsPage = () => {
 		if (!permissoesData?.data) return {}
 
 		const grouped = {}
-		
-		permissoesData.data.forEach(permission => {
+
+		permissoesData.data.forEach((permission) => {
 			// Extrair módulo do identifier (ex: "usuarios:create" -> "usuarios")
 			const [module, action] = permission.identifier.split(':')
-			
+
 			if (!grouped[module]) {
 				grouped[module] = {
 					name: module,
 					displayName: getModuleDisplayName(module),
 					icon: getModuleIcon(module),
 					color: getModuleColor(module),
-					permissions: []
+					permissions: [],
 				}
 			}
-			
+
 			grouped[module].permissions.push(permission)
 		})
 
@@ -118,7 +123,7 @@ const RoleDetailsPage = () => {
 	// Verificar se todos estão selecionados
 	const allPermissionsSelected = useMemo(() => {
 		if (!permissoesData?.data) return false
-		return permissoesData.data.every(p => selectedPermissions.includes(p.id))
+		return permissoesData.data.every((p) => selectedPermissions.includes(p.id))
 	}, [selectedPermissions, permissoesData])
 
 	// Verificar se algum está selecionado (para estado indeterminado)
@@ -131,7 +136,7 @@ const RoleDetailsPage = () => {
 		if (allPermissionsSelected) {
 			setValue('permissionIds', [])
 		} else {
-			const allIds = permissoesData.data.map(p => p.id)
+			const allIds = permissoesData.data.map((p) => p.id)
 			setValue('permissionIds', allIds)
 		}
 	}
@@ -139,54 +144,60 @@ const RoleDetailsPage = () => {
 	// Toggle de um módulo inteiro
 	const handleToggleModule = (moduleName) => {
 		const modulePermissions = permissionsByModule[moduleName].permissions
-		const moduleIds = modulePermissions.map(p => p.id)
-		
+		const moduleIds = modulePermissions.map((p) => p.id)
+
 		// Verifica se todos do módulo estão selecionados
-		const allModuleSelected = moduleIds.every(id => selectedPermissions.includes(id))
-		
+		const allModuleSelected = moduleIds.every((id) =>
+			selectedPermissions.includes(id),
+		)
+
 		const newSelected = [...selectedPermissions]
-		
+
 		if (allModuleSelected) {
 			// Remover todos do módulo
-			moduleIds.forEach(id => {
+			moduleIds.forEach((id) => {
 				const idx = newSelected.indexOf(id)
 				if (idx > -1) newSelected.splice(idx, 1)
 			})
 		} else {
 			// Adicionar todos do módulo
-			moduleIds.forEach(id => {
+			moduleIds.forEach((id) => {
 				if (!newSelected.includes(id)) newSelected.push(id)
 			})
 		}
-		
+
 		setValue('permissionIds', newSelected)
 	}
 
 	// Toggle de uma permissão específica
 	const handleTogglePermission = (permissionId) => {
 		const newSelected = [...selectedPermissions]
-		
+
 		const idx = newSelected.indexOf(permissionId)
 		if (idx > -1) {
 			newSelected.splice(idx, 1)
 		} else {
 			newSelected.push(permissionId)
 		}
-		
+
 		setValue('permissionIds', newSelected)
 	}
 
 	// Verificar se um módulo está completamente selecionado
 	const isModuleFullySelected = (moduleName) => {
 		const modulePermissions = permissionsByModule[moduleName]?.permissions || []
-		return modulePermissions.every(p => selectedPermissions.includes(p.id))
+		return modulePermissions.every((p) => selectedPermissions.includes(p.id))
 	}
 
 	// Verificar se um módulo está parcialmente selecionado
 	const isModulePartiallySelected = (moduleName) => {
 		const modulePermissions = permissionsByModule[moduleName]?.permissions || []
-		const someSelected = modulePermissions.some(p => selectedPermissions.includes(p.id))
-		const allSelected = modulePermissions.every(p => selectedPermissions.includes(p.id))
+		const someSelected = modulePermissions.some((p) =>
+			selectedPermissions.includes(p.id),
+		)
+		const allSelected = modulePermissions.every((p) =>
+			selectedPermissions.includes(p.id),
+		)
 		return someSelected && !allSelected
 	}
 
@@ -231,7 +242,6 @@ const RoleDetailsPage = () => {
 				</Button>
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-					
 					<Card>
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
@@ -251,11 +261,14 @@ const RoleDetailsPage = () => {
 									{...register('name')}
 									placeholder="Ex: Administrador, Gerente, Editor..."
 									className={cn(
-										errors.name && 'border-destructive focus-visible:ring-destructive'
+										errors.name &&
+											'border-destructive focus-visible:ring-destructive',
 									)}
 								/>
 								{errors.name && (
-									<p className="text-xs text-destructive mt-1">{errors.name.message}</p>
+									<p className="text-xs text-destructive mt-1">
+										{errors.name.message}
+									</p>
 								)}
 								{!errors.name && (
 									<p className="text-xs text-muted-foreground">
@@ -267,11 +280,16 @@ const RoleDetailsPage = () => {
 							{/* Status Toggle */}
 							<div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
 								<div className="flex-1">
-									<Label htmlFor="active-toggle" className="text-base font-medium">
+									<Label
+										htmlFor="active-toggle"
+										className="text-base font-medium"
+									>
 										Status
 									</Label>
 									<p className="text-sm text-muted-foreground mt-1">
-										{watch('active') ? '✓ Perfil ativo e disponível' : '⊘ Perfil inativo'}
+										{watch('active')
+											? '✓ Perfil ativo e disponível'
+											: '⊘ Perfil inativo'}
 									</p>
 								</div>
 								<Controller
@@ -290,7 +308,6 @@ const RoleDetailsPage = () => {
 						</CardContent>
 					</Card>
 
-					
 					<Card>
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
@@ -298,7 +315,8 @@ const RoleDetailsPage = () => {
 								Cadastrar permissões
 							</CardTitle>
 							<CardDescription>
-								Selecione as funcionalidades que os usuários com este perfil poderão acessar no sistema
+								Selecione as funcionalidades que os usuários com este perfil
+								poderão acessar no sistema
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-6">
@@ -309,39 +327,50 @@ const RoleDetailsPage = () => {
 									checked={allPermissionsSelected}
 									onCheckedChange={handleToggleMaster}
 									className={cn(
-										somePermissionsSelected && 'data-[state=checked]:bg-primary/50'
+										somePermissionsSelected &&
+											'data-[state=checked]:bg-primary/50',
 									)}
 								/>
 								<label
 									htmlFor="select-all"
 									className="text-sm font-medium cursor-pointer flex-1"
 								>
-									{allPermissionsSelected ? '✓ Todas as permissões selecionadas' : 'Selecionar todas as permissões'}
+									{allPermissionsSelected
+										? '✓ Todas as permissões selecionadas'
+										: 'Selecionar todas as permissões'}
 								</label>
 							</div>
 
 							{/* Grid de Módulos */}
 							<div>
-								<h3 className="text-sm font-semibold mb-4 text-muted-foreground">Módulos de Acesso</h3>
+								<h3 className="text-sm font-semibold mb-4 text-muted-foreground">
+									Módulos de Acesso
+								</h3>
 								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-									{Object.entries(permissionsByModule).map(([moduleName, module]) => (
-										<ModuleCard
-											key={moduleName}
-											module={module}
-											selectedPermissions={selectedPermissions}
-											onToggleModule={() => handleToggleModule(moduleName)}
-											onTogglePermission={handleTogglePermission}
-											isFullySelected={isModuleFullySelected(moduleName)}
-											isPartiallySelected={isModulePartiallySelected(moduleName)}
-										/>
-									))}
+									{Object.entries(permissionsByModule).map(
+										([moduleName, module]) => (
+											<ModuleCard
+												key={moduleName}
+												module={module}
+												selectedPermissions={selectedPermissions}
+												onToggleModule={() => handleToggleModule(moduleName)}
+												onTogglePermission={handleTogglePermission}
+												isFullySelected={isModuleFullySelected(moduleName)}
+												isPartiallySelected={isModulePartiallySelected(
+													moduleName,
+												)}
+											/>
+										),
+									)}
 								</div>
 							</div>
 
 							{/* Erro de validação */}
 							{errors.permissionIds && (
 								<div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
-									<p className="text-sm text-destructive font-medium">{errors.permissionIds.message}</p>
+									<p className="text-sm text-destructive font-medium">
+										{errors.permissionIds.message}
+									</p>
 								</div>
 							)}
 
@@ -349,14 +378,15 @@ const RoleDetailsPage = () => {
 							{selectedPermissions.length > 0 && (
 								<div className="p-3 bg-muted/50 rounded-lg border">
 									<p className="text-sm text-muted-foreground">
-										<strong>{selectedPermissions.length}</strong> permissão{selectedPermissions.length !== 1 ? 'ões' : ''} selecionada{selectedPermissions.length !== 1 ? 's' : ''}
+										<strong>{selectedPermissions.length}</strong> permissão
+										{selectedPermissions.length !== 1 ? 'ões' : ''} selecionada
+										{selectedPermissions.length !== 1 ? 's' : ''}
 									</p>
 								</div>
 							)}
 						</CardContent>
 					</Card>
 
-				
 					<div className="flex gap-3 pt-4">
 						<Button
 							type="button"
@@ -387,7 +417,7 @@ const ModuleCard = ({
 	onToggleModule,
 	onTogglePermission,
 	isFullySelected,
-	isPartiallySelected
+	isPartiallySelected,
 }) => {
 	return (
 		<Card className="hover:shadow-md transition-shadow">
@@ -398,7 +428,7 @@ const ModuleCard = ({
 						<div
 							className={cn(
 								'h-10 w-10 rounded-lg flex items-center justify-center text-xl',
-								module.color
+								module.color,
 							)}
 						>
 							{module.icon}
@@ -411,7 +441,7 @@ const ModuleCard = ({
 						checked={isFullySelected}
 						onCheckedChange={onToggleModule}
 						className={cn(
-							isPartiallySelected && 'data-[state=checked]:bg-primary/50'
+							isPartiallySelected && 'data-[state=checked]:bg-primary/50',
 						)}
 					/>
 				</div>

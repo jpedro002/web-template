@@ -172,7 +172,7 @@ export function useLogin() {
 
 	return useMutation({
 		mutationFn: authService.login,
-		onSuccess: (data) => {
+		onSuccess: (_data) => {
 			// Invalidar queries de sessão para atualizar
 			queryClient.invalidateQueries({ queryKey: sessionKeys.all })
 			// Disparar evento storage para atualizar useIsAuthenticated
@@ -195,7 +195,7 @@ export function useSession(enabled = true) {
 		queryKey: sessionKeys.get(),
 		queryFn: authService.getSession,
 		enabled: enabled && authService.isAuthenticated(),
-		staleTime: 0, // Sempre buscar dados frescos	
+		staleTime: 1000 * 60 * 5,
 		retry: 1, // Tentar 1 vez em caso de erro
 	})
 }
@@ -301,7 +301,7 @@ export function useIsAuthenticated() {
 		// Função para atualizar baseado no localStorage
 		const checkAuth = () => {
 			const hasToken = !!localStorage.getItem('token')
-			setIsAuth(prev => {
+			setIsAuth((prev) => {
 				// Só atualiza se realmente mudou
 				if (prev !== hasToken) {
 					return hasToken

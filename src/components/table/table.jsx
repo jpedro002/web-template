@@ -4,7 +4,7 @@ import {
 	getPaginationRowModel,
 	useReactTable,
 } from '@tanstack/react-table'
-import { useMemo, useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
 	Table,
 	TableBody,
@@ -13,9 +13,9 @@ import {
 	TableHeader,
 	TableRow,
 } from 'src/components/ui/table'
+import { useTableStateFromUrl } from 'src/hooks/use-table-state-from-url'
 import { generateColumns } from './columns'
 import { DataTablePagination } from './data-table-pagination'
-import { useTableStateFromUrl } from 'src/hooks/use-table-state-from-url'
 
 export function GenericTable({
 	data = [],
@@ -32,8 +32,8 @@ export function GenericTable({
 
 	// 🚀 Hook para gerenciar paginação via URL
 	// SEMPRE chamado para respeitar as regras dos hooks, mas só usado se isUrlManaged = true
-	const urlPagination = useTableStateFromUrl({ 
-		defaultPageSize: pagination?.pageSize || 10 
+	const urlPagination = useTableStateFromUrl({
+		defaultPageSize: pagination?.pageSize || 10,
 	})
 
 	// Memoiza as colunas para evitar re-render loops
@@ -52,7 +52,13 @@ export function GenericTable({
 	useEffect(() => {
 		if (!isManualPagination && !isUrlManaged) return
 		// Não faz nada aqui, apenas garante que o table será recriado quando as props mudam
-	}, [isManualPagination, isUrlManaged, pagination?.pageIndex, pagination?.pageSize, pagination?.rowCount])
+	}, [
+		isManualPagination,
+		isUrlManaged,
+		pagination?.pageIndex,
+		pagination?.pageSize,
+		pagination?.rowCount,
+	])
 
 	// Determina qual estado de paginação usar
 	const paginationState = isUrlManaged
@@ -160,7 +166,7 @@ export function GenericTable({
 					</TableBody>
 				</Table>
 			</div>
-			<DataTablePagination 
+			<DataTablePagination
 				pageIndex={table.getState().pagination.pageIndex}
 				pageSize={table.getState().pagination.pageSize}
 				pageCount={table.getPageCount()}

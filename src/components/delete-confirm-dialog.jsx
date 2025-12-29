@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -8,11 +9,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from 'src/components/ui/alert-dialog'
-import { Loader2 } from 'lucide-react'
 
 /**
  * Componente de diálogo de confirmação para delete com aparência destrutiva
- * 
+ *
  * @param {Object} props
  * @param {boolean} props.isOpen - Estado do dialog
  * @param {Function} props.onOpenChange - Callback para mudança de estado
@@ -24,10 +24,10 @@ import { Loader2 } from 'lucide-react'
  * @param {string} props.config.confirmText - Texto do botão confirmar
  * @param {string} props.config.cancelText - Texto do botão cancelar
  * @param {boolean} props.isPending - Estado de loading
- * 
+ *
  * @example
  * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation)
- * 
+ *
  * <DeleteConfirmDialog {...deleteConfirmation} />
  */
 export function DeleteConfirmDialog({
@@ -43,9 +43,7 @@ export function DeleteConfirmDialog({
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{config.title}</AlertDialogTitle>
-					<AlertDialogDescription>
-						{config.description}
-					</AlertDialogDescription>
+					<AlertDialogDescription>{config.description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel onClick={handleCancel} disabled={isPending}>

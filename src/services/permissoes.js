@@ -10,15 +10,15 @@ const BASE_URL = '/seguranca/permissoes'
 const baseService = createBaseService(BASE_URL, 'permissoes')
 
 // Extrai o que foi gerado automaticamente
-const { 
-    keys: permissoesKeys, 
-    api: baseApi,
-    useList: usePermissoesList,
-    useListAll: usePermissoesListAll,
-    useGet: usePermissoes,
-    useCreate: usePermissoesCreate,
-    useUpdate: usePermissoesUpdate,
-    useDelete: usePermissoesDelete
+const {
+	keys: permissoesKeys,
+	api: baseApi,
+	useList: usePermissoesList,
+	useListAll: usePermissoesListAll,
+	useGet: usePermissoes,
+	useCreate: usePermissoesCreate,
+	useUpdate: usePermissoesUpdate,
+	useDelete: usePermissoesDelete,
 } = baseService
 
 // ==========================================
@@ -31,7 +31,7 @@ const {
 
 // API Methods (caso precise usar diretamente)
 export const permissoesService = {
-    ...baseApi,
+	...baseApi,
 }
 
 // Query Keys (útil para invalidações manuais)
@@ -39,10 +39,10 @@ export { permissoesKeys }
 
 // Hooks Base (CRUD)
 export {
-    usePermissoesList,
-    usePermissoesListAll,
-    usePermissoes,
-    usePermissoesCreate,
-    usePermissoesUpdate,
-    usePermissoesDelete
+	usePermissoesList,
+	usePermissoesListAll,
+	usePermissoes,
+	usePermissoesCreate,
+	usePermissoesUpdate,
+	usePermissoesDelete,
 }

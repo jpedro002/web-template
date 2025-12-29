@@ -30,13 +30,17 @@ const ActionItem = ({ action, row }) => {
 
 	// Aplica classes destrutivas se variant='destructive'
 	const isDestructive = action.variant === 'destructive'
-	const destructiveClass = isDestructive 
-		? 'text-destructive focus:text-destructive focus:bg-destructive/10' 
+	const destructiveClass = isDestructive
+		? 'text-destructive focus:text-destructive focus:bg-destructive/10'
 		: ''
-	const className = [action.className, destructiveClass].filter(Boolean).join(' ')
-	
+	const className = [action.className, destructiveClass]
+		.filter(Boolean)
+		.join(' ')
+
 	// Renderização: Link ou Botão
-	const iconClassName = isDestructive ? 'mr-2 h-4 w-4 text-destructive' : 'mr-2 h-4 w-4'
+	const iconClassName = isDestructive
+		? 'mr-2 h-4 w-4 text-destructive'
+		: 'mr-2 h-4 w-4'
 	const content = (
 		<>
 			{action.icon && <action.icon className={iconClassName} />}

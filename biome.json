@@ -22,8 +22,10 @@
 		"formatter": {
 			"quoteStyle": "single",
 			"semicolons": "asNeeded",
-			"enabled": true
-		}
+			"enabled": true,
+			"jsxQuoteStyle": "single"
+		},
+		"jsxRuntime": "reactClassic"
 	},
 
 	"assist": {

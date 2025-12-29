@@ -4,10 +4,9 @@ import { useAuth } from 'src/contexts/auth-context'
 
 const Login = () => {
 	const { isAuthenticated, isReady } = useAuth()
-	
 
 	if (!isReady) {
-		return null 
+		return null
 	}
 
 	if (isAuthenticated) {

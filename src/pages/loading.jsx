@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react'
 
 const Loading = () => {
 	// const renderCount = useRef(0);
@@ -11,7 +11,7 @@ const Loading = () => {
 
 	// useEffect(() => {
 	// 	console.log(`[Loading #${instanceId.current}] Mount - ${new Date().toISOString()}`);
-		
+
 	// 	return () => {
 	// 		console.log(`[Loading #${instanceId.current}] Unmount - ${new Date().toISOString()}`);
 	// 	};
@@ -22,7 +22,7 @@ const Loading = () => {
 			<div className="fixed inset-0 z-9998 bg-black/50 backdrop-blur-sm" />
 			<div
 				id="loading"
-				className="fixed z-9999 flex h-full w-full flex-col items-center justify-center gap-4"
+				className="fixed inset-0 z-9999 flex flex-col items-center justify-center gap-4"
 			>
 				<div className="relative w-16 h-16">
 					<div className="absolute inset-0 rounded-full border-4 border-slate-700" />

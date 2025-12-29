@@ -14,7 +14,7 @@ import {
 	SelectValue,
 } from 'src/components/ui/select'
 
-export function DataTablePagination({ 
+export function DataTablePagination({
 	pageIndex = 0,
 	pageSize = 10,
 	pageCount = 0,
@@ -25,11 +25,12 @@ export function DataTablePagination({
 }) {
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2 py-4">
-			
 			<div className="flex items-center gap-2 sm:gap-4 lg:gap-6 flex-wrap sm:flex-nowrap">
 				{/* Seletor de Linhas por Página */}
 				<div className="flex items-center gap-2">
-					<p className="text-xs sm:text-sm font-medium whitespace-nowrap">Linhas:</p>
+					<p className="text-xs sm:text-sm font-medium whitespace-nowrap">
+						Linhas:
+					</p>
 					<Select
 						value={`${pageSize}`}
 						onValueChange={(value) => {
@@ -104,4 +105,3 @@ export function DataTablePagination({
 		</div>
 	)
 }
-

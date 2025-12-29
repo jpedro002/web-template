@@ -5,9 +5,7 @@ import { atomWithDebounce } from 'src/lib/atom-debounce'
  * Atom para controlar o breadcrumb
  * Exemplo: [{ label: 'Dashboard', href: '/' }, { label: 'Usuários', href: '/usuarios' }, { label: 'Detalhes' }]
  */
-export const breadcrumbAtom = atom([
-	{ label: 'Dashboard', href: '/' },
-])
+export const breadcrumbAtom = atom([{ label: 'Dashboard', href: '/' }])
 
 /**
  * Atom para controlar a permissão necessária para criar novo recurso

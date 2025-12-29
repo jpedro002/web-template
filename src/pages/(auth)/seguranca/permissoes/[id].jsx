@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronLeft } from 'lucide-react'
 import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import Form from 'src/components/form/Form'
 import { Button } from 'src/components/ui/button'
@@ -72,17 +72,14 @@ const PermissaoPage = () => {
 		setFormMethods(methods)
 	}
 
-	 useHeaderConfig({
-	  breadcrumbs: [
-		{ label: 'Segurança', href: '/' },
-		{ label: 'Permissões', href: '/seguranca/permissoes' },
-		{ label: permission ? permission.identifier : 'Carregando...' },
-
-	  ],
-	  showSearch: false,
+	useHeaderConfig({
+		breadcrumbs: [
+			{ label: 'Segurança', href: '/' },
+			{ label: 'Permissões', href: '/seguranca/permissoes' },
+			{ label: permission ? permission.identifier : 'Carregando...' },
+		],
+		showSearch: false,
 	})
-
-	
 
 	const handleSubmit = (formData) => {
 		updateMutation.mutate(
@@ -95,8 +92,7 @@ const PermissaoPage = () => {
 				},
 				onError: (err) => {
 					toast.error(
-						err?.response?.data?.message ||
-							'Erro ao atualizar permissão',
+						err?.response?.data?.message || 'Erro ao atualizar permissão',
 					)
 				},
 			},
@@ -120,18 +116,18 @@ const PermissaoPage = () => {
 		)
 	}
 
-    if (!hasPermission('permissions:update')) {
-        return (
-            <div className="p-6">
-                <div className="text-red-500">
-                    Você não tem permissão para editar permissões.
-                </div>
-                <Button onClick={() => navigate(-1)} className="mt-4">
-                    Voltar
-                </Button>
-            </div>
-        )
-    }
+	if (!hasPermission('permissions:update')) {
+		return (
+			<div className="p-6">
+				<div className="text-red-500">
+					Você não tem permissão para editar permissões.
+				</div>
+				<Button onClick={() => navigate(-1)} className="mt-4">
+					Voltar
+				</Button>
+			</div>
+		)
+	}
 
 	return (
 		<div className="space-y-6 gap-4 p-4">

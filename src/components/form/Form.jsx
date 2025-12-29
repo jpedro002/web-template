@@ -22,6 +22,7 @@ import {
 	PopoverTrigger,
 } from 'src/components/ui/popover'
 import { RadioGroup, RadioGroupItem } from 'src/components/ui/radio-group'
+import { SearchSelect } from 'src/components/ui/search-select'
 import {
 	Select,
 	SelectContent,
@@ -29,7 +30,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from 'src/components/ui/select'
-import { SearchSelect } from 'src/components/ui/search-select'
 import { Switch } from 'src/components/ui/switch'
 import { Textarea } from 'src/components/ui/textarea'
 // Utilitários
@@ -148,15 +148,15 @@ const Form = React.forwardRef(
 						if (!shouldBeRequired) baseSchema = baseSchema.optional()
 						break
 					case 'checkbox-group':
-				case 'searchSelect':
-				case 'searchPicker':
-					if (field.multiple || field.multiSelect) {
-						baseSchema = z.array(z.union([z.string(), z.number()]))
-						if (shouldBeRequired)
-							baseSchema = baseSchema.min(1, 'Selecione pelo menos uma opção')
-						else baseSchema = baseSchema.optional()
-					} else {
-						baseSchema = z.union([z.string(), z.number()])
+					case 'searchSelect':
+					case 'searchPicker':
+						if (field.multiple || field.multiSelect) {
+							baseSchema = z.array(z.union([z.string(), z.number()]))
+							if (shouldBeRequired)
+								baseSchema = baseSchema.min(1, 'Selecione pelo menos uma opção')
+							else baseSchema = baseSchema.optional()
+						} else {
+							baseSchema = z.union([z.string(), z.number()])
 							if (!shouldBeRequired)
 								baseSchema = baseSchema.optional().or(z.literal(''))
 						}
@@ -194,9 +194,9 @@ const Form = React.forwardRef(
 							acc[field.name] = false
 							break
 						case 'checkbox-group':
-					case 'searchSelect':
-					case 'searchPicker':
-						acc[field.name] = field.multiple || field.multiSelect ? [] : ''
+						case 'searchSelect':
+						case 'searchPicker':
+							acc[field.name] = field.multiple || field.multiSelect ? [] : ''
 							break
 						case 'number':
 							acc[field.name] = ''
@@ -240,9 +240,9 @@ const Form = React.forwardRef(
 				reset: (vals) => reset(vals || defaultValues),
 				setValue,
 				watch,
-				getValues: watch
+				getValues: watch,
 			})
-		}, []) // Executar apenas uma vez na montagem 
+		}, []) // Executar apenas uma vez na montagem
 
 		// Estado local para controle condicional
 		const [formValuesState, setFormValuesState] = useState(defaultValues)

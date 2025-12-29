@@ -4,28 +4,28 @@ export default function (plop) {
 	// ==========================================
 	plop.setHelper('lowercase', (text) => text.toLowerCase())
 	plop.setHelper('uppercase', (text) => text.toUpperCase())
-	
+
 	plop.setHelper('camelCase', (text) => {
 		return text
 			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-				index === 0 ? word.toLowerCase() : word.toUpperCase()
+				index === 0 ? word.toLowerCase() : word.toUpperCase(),
 			)
 			.replace(/\s+/g, '')
 	})
-	
+
 	plop.setHelper('pascalCase', (text) => {
 		return text
 			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
 			.replace(/\s+/g, '')
 	})
-	
+
 	plop.setHelper('kebabCase', (text) => {
 		return text
 			.replace(/([a-z])([A-Z])/g, '$1-$2')
 			.replace(/\s+/g, '-')
 			.toLowerCase()
 	})
-	
+
 	plop.setHelper('pluralize', (word) => {
 		const irregulars = {
 			user: 'users',
@@ -52,7 +52,7 @@ export default function (plop) {
 		if (lower.endsWith('ul')) return lower.slice(0, -2) + 'uis'
 		if (lower.endsWith('r') || lower.endsWith('z')) return lower + 'es'
 		if (lower.endsWith('s')) return lower // já está no plural
-		
+
 		// Regra padrão
 		return lower + 's'
 	})

@@ -34,10 +34,12 @@ const generateRoutes = async (pagesDir, routesFile, excludePatterns = []) => {
 	})
 
 	const imports = new Set()
+	const layoutImports = new Set() // Imports diretos para layouts
+	const loadingImports = new Set() // Imports diretos para loadings
 	const routesMap = new Map()
 	const preloadMap = new Map()
 
-	// MODIFICADO: Adicionado Suspense e Outlet (caso precise de loading sem layout)
+	// MODIFICADO: Adicionado Suspense e Outlet
 	imports.add(`import { lazy, Suspense } from 'react';`)
 	imports.add(
 		`import { createBrowserRouter, Navigate, Outlet } from 'react-router';`,
@@ -112,18 +114,40 @@ const generateRoutes = async (pagesDir, routesFile, excludePatterns = []) => {
 	const rootLoadingPath = path.join(pagesDir, 'loading.jsx')
 	const hasRootLoading = await fileExists(rootLoadingPath)
 
+	// Importar loading raiz diretamente (usado como fallback)
+	let rootLoadingName = null
+	if (hasRootLoading) {
+		rootLoadingName = 'RootLoading'
+		const normalizedRootLoadingPath = normalizePath(rootLoadingPath)
+		loadingImports.add(
+			`import ${rootLoadingName} from '${normalizedRootLoadingPath}';`,
+		)
+	}
+
 	// Função recursiva para gerar estrutura de rotas
-	const generateRouteStructure = async (map, parentPhysicalPath = '') => {
+	const generateRouteStructure = async (
+		map,
+		parentPhysicalPath = '',
+		parentLoadingName = rootLoadingName,
+	) => {
 		const routes = []
 
 		for (const [physicalName, value] of map) {
 			if (value.type === 'route') {
+				// Envolver páginas em Suspense com loading apropriado
+				const loadingFallback = parentLoadingName
+					? `<${parentLoadingName} />`
+					: null
+				const pageElement = loadingFallback
+					? `<Suspense fallback={${loadingFallback}}><${value.element} /></Suspense>`
+					: `<${value.element} />`
+
 				if (value.isIndex) {
-					routes.push(`{ index: true, element: <${value.element} /> }`)
+					routes.push(`{ index: true, element: ${pageElement} }`)
 				} else {
 					routes.push(`{
                         path: '${value.path}',
-                        element: <${value.element} />
+                        element: ${pageElement}
                     }`)
 				}
 			} else if (value.type === 'group') {
@@ -150,30 +174,30 @@ const generateRoutes = async (pagesDir, routesFile, excludePatterns = []) => {
 				)
 				const hasLoading = await fileExists(loadingPath)
 
-				const childRoutes = await generateRouteStructure(
-					value.children,
-					groupPhysicalPath,
-				)
-
-				// Lógica de construção do Elemento (Layout + Loading)
-				let elementCode = null
-
-				// 1. Resolver Loading Component
-				let loadingComponentName = null
+				// 1. Resolver Loading Component (import direto)
+				let loadingComponentName = parentLoadingName // Herda o loading do pai por padrão
 				if (hasLoading) {
 					loadingComponentName = `Load_${Math.random().toString(36).substring(2, 9)}`
 					const normalizedLoadingPath = normalizePath(loadingPath)
-					imports.add(
-						`const ${loadingComponentName} = lazy(() => import('${normalizedLoadingPath}'));`,
+					loadingImports.add(
+						`import ${loadingComponentName} from '${normalizedLoadingPath}';`,
 					)
 				}
 
-				// 2. Resolver Layout Component
+				// Gerar rotas filhas passando o loading apropriado
+				const childRoutes = await generateRouteStructure(
+					value.children,
+					groupPhysicalPath,
+					loadingComponentName, // Passa loading para os filhos
+				)
+
+				// 2. Resolver Layout Component (import direto, sem lazy)
+				let elementCode = null
 				if (hasLayout) {
 					const layoutName = `L_${Math.random().toString(36).substring(2, 9)}`
 					const normalizedLayoutPath = normalizePath(layoutPath)
-					imports.add(
-						`const ${layoutName} = lazy(() => import('${normalizedLayoutPath}'));`,
+					layoutImports.add(
+						`import ${layoutName} from '${normalizedLayoutPath}';`,
 					)
 					preloadMap.set(
 						isInvisible ? groupPhysicalPath : groupRoutePath,
@@ -181,14 +205,6 @@ const generateRoutes = async (pagesDir, routesFile, excludePatterns = []) => {
 					)
 
 					elementCode = `<${layoutName} />`
-				} else if (hasLoading && !hasLayout) {
-					// Se tem Loading mas não tem Layout, usamos Outlet para poder envolver o conteúdo
-					elementCode = `<Outlet />`
-				}
-
-				// 3. Envelopar com Suspense se houver loading
-				if (hasLoading && elementCode) {
-					elementCode = `<Suspense fallback={<${loadingComponentName} />}>${elementCode}</Suspense>`
 				}
 
 				const groupProperties = []
@@ -230,39 +246,22 @@ const generateRoutes = async (pagesDir, routesFile, excludePatterns = []) => {
 	// Gerar estrutura principal
 	let routesCode = await generateRouteStructure(routesMap, '')
 
-	// MODIFICADO: Aplicar layout, loading e/ou error boundary raiz se existirem
-	if (hasRootLayout || hasRootError || hasRootLoading) {
+	// MODIFICADO: Aplicar layout e/ou error boundary raiz se existirem
+	if (hasRootLayout || hasRootError) {
 		const rootRouteObject = ["path: '/'"]
 
 		let rootElementCode = null
 
-		// Preparar Loading Raiz
-		let rootLoadingName = null
-		if (hasRootLoading) {
-			rootLoadingName = `Load_root_${Math.random().toString(36).substring(2, 9)}`
-			const normalizedRootLoadingPath = normalizePath(rootLoadingPath)
-			imports.add(
-				`const ${rootLoadingName} = lazy(() => import('${normalizedRootLoadingPath}'));`,
-			)
-		}
-
-		// Preparar Layout Raiz
+		// Preparar Layout Raiz (import direto)
 		if (hasRootLayout) {
-			const rootLayoutName = `L_root_${Math.random().toString(36).substring(2, 9)}`
+			const rootLayoutName = 'RootLayout'
 			const normalizedRootLayoutPath = normalizePath(rootLayoutPath)
-			imports.add(
-				`const ${rootLayoutName} = lazy(() => import('${normalizedRootLayoutPath}'));`,
+			layoutImports.add(
+				`import ${rootLayoutName} from '${normalizedRootLayoutPath}';`,
 			)
 			preloadMap.set('/', `() => import('${normalizedRootLayoutPath}')`)
 
 			rootElementCode = `<${rootLayoutName} />`
-		} else if (hasRootLoading) {
-			rootElementCode = `<Outlet />`
-		}
-
-		// Envelopar Layout Raiz com Suspense se houver loading
-		if (hasRootLoading && rootElementCode) {
-			rootElementCode = `<Suspense fallback={<${rootLoadingName} />}>${rootElementCode}</Suspense>`
 		}
 
 		if (rootElementCode) {
@@ -321,6 +320,8 @@ function normalizeRoutePath(path) {
 `
 
 	const outputContent = `// ARQUIVO GERADO AUTOMATICAMENTE - NÃO EDITAR MANUALMENTE
+${Array.from(layoutImports).join('\n')}
+${Array.from(loadingImports).join('\n')}
 ${Array.from(imports).join('\n')}
 
 ${preloadMapCode}

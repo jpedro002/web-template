@@ -10,39 +10,39 @@ const BASE_URL = '/teste/cards'
 const baseService = createBaseService(BASE_URL, 'cards')
 
 // Extrai o que foi gerado automaticamente
-const { 
-    keys: cardsKeys, 
-    api: baseApi,
-    useList: useCardsList,
-    useListAll: useCardsListAll,
-    useGet: useCards,
-    useCreate: useCardsCreate,
-    useUpdate: useCardsUpdate,
-    useDelete: useCardsDelete
+const {
+	keys: cardsKeys,
+	api: baseApi,
+	useList: useCardsList,
+	useListAll: useCardsListAll,
+	useGet: useCards,
+	useCreate: useCardsCreate,
+	useUpdate: useCardsUpdate,
+	useDelete: useCardsDelete,
 } = baseService
 
 // ==========================================
 // 2. MÉTODOS CUSTOMIZADOS (Se necessário)
 // ==========================================
 const customApi = {
-    // Exemplo: Método específico desta entidade
-    exemplo: async (id, data) => {
-        const response = await api.post(`${BASE_URL}/${id}/exemplo`, data)
-        return response.data
-    },
+	// Exemplo: Método específico desta entidade
+	exemplo: async (id, data) => {
+		const response = await api.post(`${BASE_URL}/${id}/exemplo`, data)
+		return response.data
+	},
 }
 
 // Hooks Customizados
 export function useCardsExemplo() {
-    const queryClient = useQueryClient()
-    return useMutation({
-        mutationFn: ({ id, data }) => customApi.exemplo(id, data),
-        onSuccess: (data, { id }) => {
-            // Invalida o cache desta entidade
-            queryClient.invalidateQueries({ queryKey: cardsKeys.detail(id) })
-            queryClient.invalidateQueries({ queryKey: cardsKeys.all })
-        }
-    })
+	const queryClient = useQueryClient()
+	return useMutation({
+		mutationFn: ({ id, data }) => customApi.exemplo(id, data),
+		onSuccess: (data, { id }) => {
+			// Invalida o cache desta entidade
+			queryClient.invalidateQueries({ queryKey: cardsKeys.detail(id) })
+			queryClient.invalidateQueries({ queryKey: cardsKeys.all })
+		},
+	})
 }
 
 // ==========================================
@@ -51,8 +51,8 @@ export function useCardsExemplo() {
 
 // API Methods (caso precise usar diretamente)
 export const cardsService = {
-    ...baseApi,
-    ...customApi,
+	...baseApi,
+	...customApi,
 }
 
 // Query Keys (útil para invalidações manuais)
@@ -60,10 +60,10 @@ export { cardsKeys }
 
 // Hooks Base (CRUD)
 export {
-    useCardsList,
-    useCardsListAll,
-    useCards,
-    useCardsCreate,
-    useCardsUpdate,
-    useCardsDelete
+	useCardsList,
+	useCardsListAll,
+	useCards,
+	useCardsCreate,
+	useCardsUpdate,
+	useCardsDelete,
 }

@@ -1,6 +1,6 @@
 /**
  * EXEMPLO DE USO - Como usar os atoms para controlar o header em suas páginas
- * 
+ *
  * Este arquivo demonstra como usar os atoms do Jotai para customizar o breadcrumb,
  * pesquisa e botão "Novo" em suas páginas.
  */
@@ -14,14 +14,14 @@ import {
 	onNewClickAtom,
 	searchPlaceholderAtom,
 	searchValueAtom,
-	showSearchAtom,
 	showHeaderAtom,
+	showSearchAtom,
 } from 'src/lib/atoms'
 
 /**
  * Hook customizado para configurar o header
  * Use este hook no início de suas páginas para configurar o breadcrumb e ações
- * 
+ *
  * @example
  * useHeaderConfig({
  *   breadcrumbs: [
@@ -95,13 +95,13 @@ export function useHeaderConfig({
  * ============================================
  * EXEMPLO DE USO EM UMA PÁGINA
  * ============================================
- * 
+ *
  * import { useNavigate } from 'react-router'
  * import { useHeaderConfig } from 'src/hooks/use-header-config'
- * 
+ *
  * export function UsuariosPage() {
  *   const navigate = useNavigate()
- * 
+ *
  *   // Configurar o header
  *   useHeaderConfig({
  *     breadcrumbs: [
@@ -114,14 +114,14 @@ export function useHeaderConfig({
  *     searchPlaceholder: 'Buscar por email ou nome...',
  *     showSearch: true  // Mostrar ou ocultar a busca (padrão: true)
  *   })
- * 
+ *
  *   return (
  *     <div>
  *       // Seu conteúdo aqui
  *     </div>
  *   )
  * }
- * 
+ *
  * ============================================
  * PERMISSÕES COMUNS
  * ============================================
@@ -131,7 +131,7 @@ export function useHeaderConfig({
  * 'usuarios:*'           - Qualquer ação em usuários
  * '*:create'             - Criar qualquer recurso
  * '*'                    - Acesso total
- * 
+ *
  * Se createPermission for null, o botão "Novo" não aparece.
  * Se o usuário não tiver permissão, o botão é ocultado automaticamente.
  */

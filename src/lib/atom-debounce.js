@@ -3,7 +3,7 @@ import { atom } from 'jotai'
 /**
  * Cria um atom com debounce para valores que mudam frequentemente
  * Útil para inputs de pesquisa, onde não queremos fazer requisições a cada keystroke
- * 
+ *
  * @param {*} initialValue - Valor inicial
  * @param {number} delayMilliseconds - Tempo de debounce em ms (padrão: 500)
  * @param {boolean} shouldDebounceOnReset - Se deve fazer debounce ao resetar (padrão: false)
@@ -18,10 +18,10 @@ export function atomWithDebounce(
 
 	// Armazena o valor atual enquanto está digitando
 	const _currentValueAtom = atom(initialValue)
-	
+
 	// Armazena o valor final após debounce
 	const _debouncedValueAtom = atom(initialValue)
-	
+
 	// Indica se está no período de debounce
 	const isDebouncingAtom = atom(false)
 
@@ -33,9 +33,7 @@ export function atomWithDebounce(
 
 			const prevValue = get(_currentValueAtom)
 			const nextValue =
-				typeof update === 'function'
-					? update(prevValue)
-					: update
+				typeof update === 'function' ? update(prevValue) : update
 
 			const onDebounceStart = () => {
 				set(_currentValueAtom, nextValue)

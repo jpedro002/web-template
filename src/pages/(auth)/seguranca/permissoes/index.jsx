@@ -1,139 +1,144 @@
-import { useMemo } from 'react'
-import { useSearchParams } from 'react-router'
-import { Helmet } from 'react-helmet-async'
 import { Loader2, Plus } from 'lucide-react'
-
-import { usePermissoesList } from 'src/services/permissoes'
-import { GenericTable } from 'src/components/table/table'
-import { Button } from 'src/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'src/components/ui/card'
-import { Badge } from 'src/components/ui/badge'
-import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { useMemo } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useSearchParams } from 'react-router'
 import { PermissionRoute } from 'src/components/protected-route'
+import { GenericTable } from 'src/components/table/table'
+import { Badge } from 'src/components/ui/badge'
+import { Button } from 'src/components/ui/button'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from 'src/components/ui/card'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
 import { useTableStateFromUrl } from 'src/hooks/use-table-state-from-url'
+import { usePermissoesList } from 'src/services/permissoes'
 
 const PermissoesPage = () => {
-  const [searchParams] = useSearchParams()
-  const query = searchParams.get('q') || '' 
-  
-  // 🚀 Hook para sincronizar paginação com a URL (usado para a query da API)
-  const { page, pageSize } = useTableStateFromUrl({ defaultPageSize: 20 })
+	const [searchParams] = useSearchParams()
+	const query = searchParams.get('q') || ''
 
-  const { data, isLoading, isFetching } = usePermissoesList({
-    page,
-    pageSize,
-    term: query,
-    fields: ['identifier', 'name', 'category'], 
-  })
+	// 🚀 Hook para sincronizar paginação com a URL (usado para a query da API)
+	const { page, pageSize } = useTableStateFromUrl({ defaultPageSize: 20 })
 
-  useHeaderConfig({
-  breadcrumbs: [
-    { label: 'Segurança' },
-    { label: 'Permissões' }
-  ],
+	const { data, isLoading, isFetching } = usePermissoesList({
+		page,
+		pageSize,
+		term: query,
+		fields: ['identifier', 'name', 'category'],
+	})
 
-  searchPlaceholder: 'Buscar permissões...'
-})
+	useHeaderConfig({
+		breadcrumbs: [{ label: 'Segurança' }, { label: 'Permissões' }],
 
-  const headers = useMemo(() => [
-    {
-      field: 'identifier',
-      label: 'Identificador',
-      type: 'text',
-    },
-    {
-      field: 'name',
-      label: 'Nome',
-      type: 'text',
-    },
-    {
-      field: 'category',
-      label: 'Categoria',
-      type: 'custom',
-      render: (value) => (
-        <Badge variant="outline" className="capitalize">
-          {value}
-        </Badge>
-      ),
-    },
-    {
-      field: 'active',
-      label: 'Status',
-      type: 'boolean',
-      trueLabel: 'Ativo',
-      falseLabel: 'Inativo',
-    },
-  ], [])
+		searchPlaceholder: 'Buscar permissões...',
+	})
 
-  
-  const rowActions = useMemo(() => [
-    {
-      label: 'Editar',
-      to: (row) => `/seguranca/permissoes/${row.id}`,
-      permission: 'permissions:update',
-    }
-  ], [])
+	const headers = useMemo(
+		() => [
+			{
+				field: 'identifier',
+				label: 'Identificador',
+				type: 'text',
+			},
+			{
+				field: 'name',
+				label: 'Nome',
+				type: 'text',
+			},
+			{
+				field: 'category',
+				label: 'Categoria',
+				type: 'custom',
+				render: (value) => (
+					<Badge variant="outline" className="capitalize">
+						{value}
+					</Badge>
+				),
+			},
+			{
+				field: 'active',
+				label: 'Status',
+				type: 'boolean',
+				trueLabel: 'Ativo',
+				falseLabel: 'Inativo',
+			},
+		],
+		[],
+	)
 
-  const rowCount = data?.pagination?.rowCount || 0
+	const rowActions = useMemo(
+		() => [
+			{
+				label: 'Editar',
+				to: (row) => `/seguranca/permissoes/${row.id}`,
+				permission: 'permissions:update',
+			},
+		],
+		[],
+	)
 
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-  return (
-    <PermissionRoute permission="permissions:read">
-      <Helmet>
-        <title>Permissões</title>
-      </Helmet>
+	const rowCount = data?.pagination?.rowCount || 0
 
-      <div className="space-y-6 gap-4 p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Permissões</h1>
-              <p className="text-muted-foreground">
-                Gerencie as permissões do sistema
-              </p>
-            </div>
-          </div>
-          
-        </div>
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-96">
+				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			</div>
+		)
+	}
+	return (
+		<PermissionRoute permission="permissions:read">
+			<Helmet>
+				<title>Permissões</title>
+			</Helmet>
 
-        {/* Tabela */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Lista de Permissões
-              {isFetching && (
-                <Loader2 className="ml-2 h-4 w-4 animate-spin inline" />
-              )}
-            </CardTitle>
-            <CardDescription>
-              {rowCount} permissões cadastradas            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <GenericTable
-              data={data?.data || []}
-              headers={headers}
-              rowActions={rowActions}
-              selectableRows={false}
-              pagination={{
-                pageSize: 20,
-                rowCount,
-                manageUrlState: true, // 🚀 A tabela gerencia a URL internamente
-              }}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </PermissionRoute>
-  )
+			<div className="space-y-6 gap-4 p-4">
+				{/* Header */}
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-3">
+						<div>
+							<h1 className="text-3xl font-bold tracking-tight">Permissões</h1>
+							<p className="text-muted-foreground">
+								Gerencie as permissões do sistema
+							</p>
+						</div>
+					</div>
+				</div>
+
+				{/* Tabela */}
+				<Card>
+					<CardHeader>
+						<CardTitle>
+							Lista de Permissões
+							{isFetching && (
+								<Loader2 className="ml-2 h-4 w-4 animate-spin inline" />
+							)}
+						</CardTitle>
+						<CardDescription>
+							{rowCount} permissões cadastradas{' '}
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<GenericTable
+							data={data?.data || []}
+							headers={headers}
+							rowActions={rowActions}
+							selectableRows={false}
+							pagination={{
+								pageSize: 20,
+								rowCount,
+								manageUrlState: true, // 🚀 A tabela gerencia a URL internamente
+							}}
+						/>
+					</CardContent>
+				</Card>
+			</div>
+		</PermissionRoute>
+	)
 }
 
 export default PermissoesPage

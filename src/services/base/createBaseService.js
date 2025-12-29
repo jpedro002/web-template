@@ -45,10 +45,10 @@ import { api } from 'src/lib/axios'
 
 /**
  * Cria um serviço CRUD completo compatível com o BaseController do backend.
- * 
+ *
  * @param {string} endpoint - A URL base do recurso (ex: '/seguranca/usuarios')
  * @param {string|string[]} queryKey - A chave base para o React Query (ex: 'usuarios')
- * 
+ *
  * @returns {Object} Objeto contendo:
  *   - keys: Query keys para uso manual
  *   - api: Métodos da API (list, listAll, get, create, update, delete)
@@ -58,423 +58,423 @@ import { api } from 'src/lib/axios'
  *   - useCreate: Hook para criar registro
  *   - useUpdate: Hook para atualizar registro
  *   - useDelete: Hook para deletar registro
- * 
+ *
  * @example
  * const baseService = createBaseService('/api/produtos', 'produtos')
  * const { useList, useCreate } = baseService
- * 
+ *
  * // Uso no componente
  * const { data } = useList({ page: 1, pageSize: 10, term: 'notebook' })
  * const createMutation = useCreate()
  */
 export function createBaseService(endpoint, queryKey) {
-    // Garante que a key seja um array para consistência
-    const entityKey = Array.isArray(queryKey) ? queryKey : [queryKey]
+	// Garante que a key seja um array para consistência
+	const entityKey = Array.isArray(queryKey) ? queryKey : [queryKey]
 
-    // ==========================================
-    // 1. QUERY KEYS
-    // ==========================================
-    const keys = {
-        all: entityKey,
-        list: (filters = {}) => [...keys.all, 'list', filters],
-        detail: (id) => [...keys.all, 'detail', id],
-    }
+	// ==========================================
+	// 1. QUERY KEYS
+	// ==========================================
+	const keys = {
+		all: entityKey,
+		list: (filters = {}) => [...keys.all, 'list', filters],
+		detail: (id) => [...keys.all, 'detail', id],
+	}
 
-    // ==========================================
-    // 2. API METHODS (Axios)
-    // ==========================================
-    const apiMethods = {
-        /**
-         * Lista registros com paginação (Match com baseController.fetch)
-         * 
-         * @param {ListFilters} [filters={}] - Filtros de busca e paginação
-         * @returns {Promise<PaginatedResponse>} Dados paginados
-         * 
-         * @example
-         * const result = await api.list({ 
-         *   page: 1, 
-         *   pageSize: 10,
-         *   term: 'João',
-         *   fspecifics: 'ativo$true',
-         *   select: 'id,nome,email'
-         * })
-         */
-        list: async (filters = {}) => {
-            // Repassamos todos os filtros diretamente. 
-            // O axios serializa objetos simples. Arrays como 'fields' são tratados automaticamente.
-            const response = await api.get(endpoint, { params: filters })
-            return response.data
-        },
+	// ==========================================
+	// 2. API METHODS (Axios)
+	// ==========================================
+	const apiMethods = {
+		/**
+		 * Lista registros com paginação (Match com baseController.fetch)
+		 *
+		 * @param {ListFilters} [filters={}] - Filtros de busca e paginação
+		 * @returns {Promise<PaginatedResponse>} Dados paginados
+		 *
+		 * @example
+		 * const result = await api.list({
+		 *   page: 1,
+		 *   pageSize: 10,
+		 *   term: 'João',
+		 *   fspecifics: 'ativo$true',
+		 *   select: 'id,nome,email'
+		 * })
+		 */
+		list: async (filters = {}) => {
+			// Repassamos todos os filtros diretamente.
+			// O axios serializa objetos simples. Arrays como 'fields' são tratados automaticamente.
+			const response = await api.get(endpoint, { params: filters })
+			return response.data
+		},
 
-        /**
-         * Lista TODOS os registros sem paginação (Match com baseController.all)
-         * 
-         * @param {ListAllFilters} [filters={}] - Filtros de busca (sem paginação)
-         * @returns {Promise<AllResponse>} Todos os dados
-         * 
-         * @example
-         * const result = await api.listAll({ 
-         *   term: 'admin',
-         *   order: 'nome',
-         *   orderDirection: 'asc'
-         * })
-         */
-        listAll: async (filters = {}) => {
-            const response = await api.get(`${endpoint}/all`, { params: filters })
-            return response.data
-        },
+		/**
+		 * Lista TODOS os registros sem paginação (Match com baseController.all)
+		 *
+		 * @param {ListAllFilters} [filters={}] - Filtros de busca (sem paginação)
+		 * @returns {Promise<AllResponse>} Todos os dados
+		 *
+		 * @example
+		 * const result = await api.listAll({
+		 *   term: 'admin',
+		 *   order: 'nome',
+		 *   orderDirection: 'asc'
+		 * })
+		 */
+		listAll: async (filters = {}) => {
+			const response = await api.get(`${endpoint}/all`, { params: filters })
+			return response.data
+		},
 
-        /**
-         * Busca um registro específico por ID
-         * 
-         * @param {string} id - ID do registro
-         * @param {GetFilters} [filters={}] - Filtros opcionais (select)
-         * @returns {Promise<Object>} Registro encontrado
-         * 
-         * @example
-         * const user = await api.get('123', { select: 'id,nome,email' })
-         */
-        get: async (id, filters = {}) => {
-            const response = await api.get(`${endpoint}/${id}`, { params: filters })
-            return response.data
-        },
+		/**
+		 * Busca um registro específico por ID
+		 *
+		 * @param {string} id - ID do registro
+		 * @param {GetFilters} [filters={}] - Filtros opcionais (select)
+		 * @returns {Promise<Object>} Registro encontrado
+		 *
+		 * @example
+		 * const user = await api.get('123', { select: 'id,nome,email' })
+		 */
+		get: async (id, filters = {}) => {
+			const response = await api.get(`${endpoint}/${id}`, { params: filters })
+			return response.data
+		},
 
-        /**
-         * Cria um novo registro
-         * 
-         * @param {Object} data - Dados do novo registro
-         * @returns {Promise<Object>} Registro criado
-         * 
-         * @example
-         * const newUser = await api.create({ nome: 'João', email: 'joao@email.com' })
-         */
-        create: async (data) => {
-            const response = await api.post(endpoint, data)
-            return response.data
-        },
+		/**
+		 * Cria um novo registro
+		 *
+		 * @param {Object} data - Dados do novo registro
+		 * @returns {Promise<Object>} Registro criado
+		 *
+		 * @example
+		 * const newUser = await api.create({ nome: 'João', email: 'joao@email.com' })
+		 */
+		create: async (data) => {
+			const response = await api.post(endpoint, data)
+			return response.data
+		},
 
-        /**
-         * Atualiza um registro existente
-         * 
-         * @param {string} id - ID do registro
-         * @param {Object} data - Dados para atualização
-         * @returns {Promise<Object>} Registro atualizado
-         * 
-         * @example
-         * const updated = await api.update('123', { nome: 'João Silva' })
-         */
-        update: async (id, data) => {
-            const response = await api.put(`${endpoint}/${id}`, data)
-            return response.data
-        },
+		/**
+		 * Atualiza um registro existente
+		 *
+		 * @param {string} id - ID do registro
+		 * @param {Object} data - Dados para atualização
+		 * @returns {Promise<Object>} Registro atualizado
+		 *
+		 * @example
+		 * const updated = await api.update('123', { nome: 'João Silva' })
+		 */
+		update: async (id, data) => {
+			const response = await api.put(`${endpoint}/${id}`, data)
+			return response.data
+		},
 
-        /**
-         * Deleta um registro
-         * 
-         * @param {string} id - ID do registro a deletar
-         * @returns {Promise<void>}
-         * 
-         * @example
-         * await api.delete('123')
-         */
-        delete: async (id) => {
-            await api.delete(`${endpoint}/${id}`)
-        },
-    }
+		/**
+		 * Deleta um registro
+		 *
+		 * @param {string} id - ID do registro a deletar
+		 * @returns {Promise<void>}
+		 *
+		 * @example
+		 * await api.delete('123')
+		 */
+		delete: async (id) => {
+			await api.delete(`${endpoint}/${id}`)
+		},
+	}
 
-    // ==========================================
-    // 3. HOOKS (React Query)
-    // ==========================================
-    const hooks = {
-        /**
-         * Hook para listagem paginada de registros
-         * 
-         * @param {ListFilters} [filters={}] - Filtros de busca e paginação
-         * @param {Object} [options={}] - Opções do React Query (staleTime, enabled, etc)
-         * @returns {import('@tanstack/react-query').UseQueryResult<PaginatedResponse>}
-         * 
-         * @example
-         * // Uso básico
-         * const { data, isLoading } = useList({ page: 1, pageSize: 10 })
-         * 
-         * @example
-         * // Com filtros avançados
-         * const { data } = useList({
-         *   page: 1,
-         *   pageSize: 20,
-         *   term: 'João',
-         *   fields: ['nome', 'email'],
-         *   order: 'createdAt',
-         *   orderDirection: 'desc',
-         *   fspecifics: ['ativo$true', 'role$admin'],
-         *   select: 'id,nome,email,ativo'
-         * })
-         * 
-         * @example
-         * // Com opções do React Query
-         * const { data } = useList(
-         *   { page: 1, pageSize: 10 },
-         *   { staleTime: 60000, enabled: isAuthenticated }
-         * )
-         */
-        useList: (filters = {}, options = {}) => {
-            return useQuery({
-                queryKey: keys.list(filters),
-                queryFn: () => apiMethods.list(filters),
-                placeholderData: (prev) => prev, // Mantém dados anteriores enquanto carrega novos (UX melhor na paginação)
-                staleTime: 1000 * 60 * 5,
-                ...options,
-            })
-        },
+	// ==========================================
+	// 3. HOOKS (React Query)
+	// ==========================================
+	const hooks = {
+		/**
+		 * Hook para listagem paginada de registros
+		 *
+		 * @param {ListFilters} [filters={}] - Filtros de busca e paginação
+		 * @param {Object} [options={}] - Opções do React Query (staleTime, enabled, etc)
+		 * @returns {import('@tanstack/react-query').UseQueryResult<PaginatedResponse>}
+		 *
+		 * @example
+		 * // Uso básico
+		 * const { data, isLoading } = useList({ page: 1, pageSize: 10 })
+		 *
+		 * @example
+		 * // Com filtros avançados
+		 * const { data } = useList({
+		 *   page: 1,
+		 *   pageSize: 20,
+		 *   term: 'João',
+		 *   fields: ['nome', 'email'],
+		 *   order: 'createdAt',
+		 *   orderDirection: 'desc',
+		 *   fspecifics: ['ativo$true', 'role$admin'],
+		 *   select: 'id,nome,email,ativo'
+		 * })
+		 *
+		 * @example
+		 * // Com opções do React Query
+		 * const { data } = useList(
+		 *   { page: 1, pageSize: 10 },
+		 *   { staleTime: 60000, enabled: isAuthenticated }
+		 * )
+		 */
+		useList: (filters = {}, options = {}) => {
+			return useQuery({
+				queryKey: keys.list(filters),
+				queryFn: () => apiMethods.list(filters),
+				placeholderData: (prev) => prev, // Mantém dados anteriores enquanto carrega novos (UX melhor na paginação)
+				staleTime: 1000 * 60 * 5,
+				...options,
+			})
+		},
 
-        /**
-         * Hook para listar TODOS os registros sem paginação
-         * 
-         * @param {ListAllFilters} [filters={}] - Filtros de busca (sem paginação)
-         * @param {Object} [options={}] - Opções do React Query
-         * @returns {import('@tanstack/react-query').UseQueryResult<AllResponse>}
-         * 
-         * @example
-         * // Listar tudo para um select/dropdown
-         * const { data: usuarios } = useListAll()
-         * 
-         * @example
-         * // Com filtros
-         * const { data: ativos } = useListAll({
-         *   fspecifics: 'ativo$true',
-         *   order: 'nome',
-         *   select: 'id,nome'
-         * })
-         * 
-         * @example
-         * // Desabilitado até uma condição
-         * const { data } = useListAll(
-         *   { term: searchTerm },
-         *   { enabled: searchTerm.length > 2 }
-         * )
-         */
-        useListAll: (filters = {}, options = {}) => {
-            return useQuery({
-                queryKey: [...keys.all, 'all-list', filters],
-                queryFn: () => apiMethods.listAll(filters),
-                staleTime: 1000 * 60 * 5,
-                ...options,
-            })
-        },
+		/**
+		 * Hook para listar TODOS os registros sem paginação
+		 *
+		 * @param {ListAllFilters} [filters={}] - Filtros de busca (sem paginação)
+		 * @param {Object} [options={}] - Opções do React Query
+		 * @returns {import('@tanstack/react-query').UseQueryResult<AllResponse>}
+		 *
+		 * @example
+		 * // Listar tudo para um select/dropdown
+		 * const { data: usuarios } = useListAll()
+		 *
+		 * @example
+		 * // Com filtros
+		 * const { data: ativos } = useListAll({
+		 *   fspecifics: 'ativo$true',
+		 *   order: 'nome',
+		 *   select: 'id,nome'
+		 * })
+		 *
+		 * @example
+		 * // Desabilitado até uma condição
+		 * const { data } = useListAll(
+		 *   { term: searchTerm },
+		 *   { enabled: searchTerm.length > 2 }
+		 * )
+		 */
+		useListAll: (filters = {}, options = {}) => {
+			return useQuery({
+				queryKey: [...keys.all, 'all-list', filters],
+				queryFn: () => apiMethods.listAll(filters),
+				staleTime: 1000 * 60 * 5,
+				...options,
+			})
+		},
 
-        /**
-         * Hook para obter um registro específico por ID
-         * 
-         * @param {string} id - ID do registro
-         * @param {Object} [options={}] - Opções do React Query
-         * @param {GetFilters} [options.filters] - Filtros opcionais (select)
-         * @returns {import('@tanstack/react-query').UseQueryResult<Object>}
-         * 
-         * @example
-         * // Buscar por ID
-         * const { data: usuario, isLoading } = useGet('123')
-         * 
-         * @example
-         * // Com select de campos
-         * const { data } = useGet('123', {
-         *   filters: { select: 'id,nome,email' }
-         * })
-         * 
-         * @example
-         * // Condicional (ex: edição)
-         * const { id } = useParams()
-         * const { data } = useGet(id, { enabled: id !== 'new' })
-         */
-        useGet: (id, options = {}) => {
-            const { filters, ...queryOptions } = options
-            return useQuery({
-                queryKey: keys.detail(id),
-                queryFn: () => apiMethods.get(id, filters),
-                enabled: !!id,
-                staleTime: 1000 * 60 * 5,
-                ...queryOptions,
-            })
-        },
+		/**
+		 * Hook para obter um registro específico por ID
+		 *
+		 * @param {string} id - ID do registro
+		 * @param {Object} [options={}] - Opções do React Query
+		 * @param {GetFilters} [options.filters] - Filtros opcionais (select)
+		 * @returns {import('@tanstack/react-query').UseQueryResult<Object>}
+		 *
+		 * @example
+		 * // Buscar por ID
+		 * const { data: usuario, isLoading } = useGet('123')
+		 *
+		 * @example
+		 * // Com select de campos
+		 * const { data } = useGet('123', {
+		 *   filters: { select: 'id,nome,email' }
+		 * })
+		 *
+		 * @example
+		 * // Condicional (ex: edição)
+		 * const { id } = useParams()
+		 * const { data } = useGet(id, { enabled: id !== 'new' })
+		 */
+		useGet: (id, options = {}) => {
+			const { filters, ...queryOptions } = options
+			return useQuery({
+				queryKey: keys.detail(id),
+				queryFn: () => apiMethods.get(id, filters),
+				enabled: !!id,
+				staleTime: 1000 * 60 * 5,
+				...queryOptions,
+			})
+		},
 
-        /**
-         * Hook para criar um novo registro
-         * 
-         * @param {Object} [options={}] - Opções do React Query (onSuccess, onError, etc)
-         * @returns {import('@tanstack/react-query').UseMutationResult}
-         * 
-         * @example
-         * // Uso básico
-         * const createMutation = useCreate()
-         * createMutation.mutate({ nome: 'João', email: 'joao@email.com' })
-         * 
-         * @example
-         * // Com callbacks
-         * const createMutation = useCreate({
-         *   onSuccess: (data) => {
-         *     toast.success('Criado com sucesso!')
-         *     navigate(`/usuarios/${data.id}`)
-         *   },
-         *   onError: (error) => {
-         *     toast.error(error.message)
-         *   }
-         * })
-         * 
-         * @example
-         * // Em formulário
-         * const handleSubmit = (formData) => {
-         *   createMutation.mutate(formData)
-         * }
-         */
-        useCreate: (options = {}) => {
-            const queryClient = useQueryClient()
-            return useMutation({
-                mutationFn: apiMethods.create,
-                onSuccess: (data, variables, context) => {
-                    // Invalida qualquer lista dessa entidade
-                    queryClient.invalidateQueries({ queryKey: keys.all })
-                    if (options.onSuccess) options.onSuccess(data, variables, context)
-                },
-                ...options,
-            })
-        },
+		/**
+		 * Hook para criar um novo registro
+		 *
+		 * @param {Object} [options={}] - Opções do React Query (onSuccess, onError, etc)
+		 * @returns {import('@tanstack/react-query').UseMutationResult}
+		 *
+		 * @example
+		 * // Uso básico
+		 * const createMutation = useCreate()
+		 * createMutation.mutate({ nome: 'João', email: 'joao@email.com' })
+		 *
+		 * @example
+		 * // Com callbacks
+		 * const createMutation = useCreate({
+		 *   onSuccess: (data) => {
+		 *     toast.success('Criado com sucesso!')
+		 *     navigate(`/usuarios/${data.id}`)
+		 *   },
+		 *   onError: (error) => {
+		 *     toast.error(error.message)
+		 *   }
+		 * })
+		 *
+		 * @example
+		 * // Em formulário
+		 * const handleSubmit = (formData) => {
+		 *   createMutation.mutate(formData)
+		 * }
+		 */
+		useCreate: (options = {}) => {
+			const queryClient = useQueryClient()
+			return useMutation({
+				mutationFn: apiMethods.create,
+				onSuccess: (data, variables, context) => {
+					// Invalida qualquer lista dessa entidade
+					queryClient.invalidateQueries({ queryKey: keys.all })
+					if (options.onSuccess) options.onSuccess(data, variables, context)
+				},
+				...options,
+			})
+		},
 
-        /**
-         * Hook para atualizar um registro existente
-         * 
-         * @param {Object} [options={}] - Opções do React Query
-         * @returns {import('@tanstack/react-query').UseMutationResult}
-         * 
-         * @example
-         * // Uso básico
-         * const updateMutation = useUpdate()
-         * updateMutation.mutate({ 
-         *   id: '123', 
-         *   data: { nome: 'João Silva' } 
-         * })
-         * 
-         * @example
-         * // Com callbacks
-         * const updateMutation = useUpdate({
-         *   onSuccess: (data, { id }) => {
-         *     toast.success('Atualizado!')
-         *     navigate(`/usuarios/${id}`)
-         *   }
-         * })
-         * 
-         * @example
-         * // Em formulário de edição
-         * const { id } = useParams()
-         * const handleSubmit = (formData) => {
-         *   updateMutation.mutate({ id, data: formData })
-         * }
-         */
-        useUpdate: (options = {}) => {
-            const queryClient = useQueryClient()
-            return useMutation({
-                mutationFn: ({ id, data }) => apiMethods.update(id, data),
-                onSuccess: (data, variables, context) => {
-                    // Invalida o detalhe específico
-                    queryClient.invalidateQueries({ queryKey: keys.detail(variables.id) })
-                    // Invalida as listas para atualizar dados na tabela
-                    queryClient.invalidateQueries({ queryKey: keys.all })
-                    
-                    if (options.onSuccess) options.onSuccess(data, variables, context)
-                },
-                ...options,
-            })
-        },
+		/**
+		 * Hook para atualizar um registro existente
+		 *
+		 * @param {Object} [options={}] - Opções do React Query
+		 * @returns {import('@tanstack/react-query').UseMutationResult}
+		 *
+		 * @example
+		 * // Uso básico
+		 * const updateMutation = useUpdate()
+		 * updateMutation.mutate({
+		 *   id: '123',
+		 *   data: { nome: 'João Silva' }
+		 * })
+		 *
+		 * @example
+		 * // Com callbacks
+		 * const updateMutation = useUpdate({
+		 *   onSuccess: (data, { id }) => {
+		 *     toast.success('Atualizado!')
+		 *     navigate(`/usuarios/${id}`)
+		 *   }
+		 * })
+		 *
+		 * @example
+		 * // Em formulário de edição
+		 * const { id } = useParams()
+		 * const handleSubmit = (formData) => {
+		 *   updateMutation.mutate({ id, data: formData })
+		 * }
+		 */
+		useUpdate: (options = {}) => {
+			const queryClient = useQueryClient()
+			return useMutation({
+				mutationFn: ({ id, data }) => apiMethods.update(id, data),
+				onSuccess: (data, variables, context) => {
+					// Invalida o detalhe específico
+					queryClient.invalidateQueries({ queryKey: keys.detail(variables.id) })
+					// Invalida as listas para atualizar dados na tabela
+					queryClient.invalidateQueries({ queryKey: keys.all })
 
-        /**
-         * Hook para deletar um registro
-         * 
-         * IMPORTANTE: Para adicionar confirmação de exclusão, use o hook useDeleteWithConfirmation:
-         * 
-         * @param {Object} [options={}] - Opções do React Query
-         * @returns {import('@tanstack/react-query').UseMutationResult}
-         * 
-         * @example
-         * // ✅ RECOMENDADO: Com confirmação via AlertDialog
-         * import { useDeleteWithConfirmation } from 'src/hooks/use-delete-with-confirmation'
-         * import { DeleteConfirmDialog } from 'src/components/delete-confirm-dialog'
-         * 
-         * const deleteMutation = useUsuariosDelete()
-         * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
-         *   title: 'Excluir Usuário',
-         *   description: 'Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.',
-         *   confirmText: 'Sim, excluir',
-         *   cancelText: 'Cancelar'
-         * })
-         * 
-         * // No JSX:
-         * <Button 
-         *   variant="destructive" 
-         *   onClick={() => deleteConfirmation.confirmDelete(usuario.id)}
-         * >
-         *   Excluir
-         * </Button>
-         * <DeleteConfirmDialog {...deleteConfirmation} />
-         * 
-         * @example
-         * // Com descrição dinâmica baseada no item
-         * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
-         *   title: 'Excluir Usuário',
-         *   getDescription: (item) => `Deseja excluir o usuário "${item.nome}"?`,
-         * })
-         * 
-         * // Passar o objeto completo
-         * <Button onClick={() => deleteConfirmation.confirmDelete(usuario)}>
-         *   Excluir
-         * </Button>
-         * 
-         * @example
-         * // ⚠️  Uso direto (sem confirmação - não recomendado)
-         * const deleteMutation = useDelete()
-         * deleteMutation.mutate('123')
-         * 
-         * @example
-         * // Com callbacks personalizados
-         * const deleteMutation = useDelete({
-         *   onSuccess: () => {
-         *     toast.success('Deletado com sucesso!')
-         *     navigate('/usuarios')
-         *   },
-         *   onError: (error) => {
-         *     toast.error(`Erro ao deletar: ${error.message}`)
-         *   }
-         * })
-         * 
-         * @example
-         * // Em ações de tabela (GenericTable)
-         * const actions = [
-         *   {
-         *     label: 'Editar',
-         *     icon: Edit,
-         *     to: (row) => `/usuarios/${row.id}`,
-         *   },
-         *   {
-         *     label: 'Excluir',
-         *     icon: Trash2,
-         *     variant: 'destructive',
-         *     onClick: (row) => deleteConfirmation.confirmDelete(row),
-         *   }
-         * ]
-         */
-        useDelete: (options = {}) => {
-            const queryClient = useQueryClient()
-            return useMutation({
-                mutationFn: apiMethods.delete,
-                onSuccess: (data, variables, context) => {
-                    queryClient.invalidateQueries({ queryKey: keys.all })
-                    if (options.onSuccess) options.onSuccess(data, variables, context)
-                },
-                ...options,
-            })
-        },
-    }
+					if (options.onSuccess) options.onSuccess(data, variables, context)
+				},
+				...options,
+			})
+		},
 
-    return {
-        keys,
-        api: apiMethods,
-        ...hooks, // Espalha os hooks (useList, useCreate, etc)
-    }
+		/**
+		 * Hook para deletar um registro
+		 *
+		 * IMPORTANTE: Para adicionar confirmação de exclusão, use o hook useDeleteWithConfirmation:
+		 *
+		 * @param {Object} [options={}] - Opções do React Query
+		 * @returns {import('@tanstack/react-query').UseMutationResult}
+		 *
+		 * @example
+		 * // ✅ RECOMENDADO: Com confirmação via AlertDialog
+		 * import { useDeleteWithConfirmation } from 'src/hooks/use-delete-with-confirmation'
+		 * import { DeleteConfirmDialog } from 'src/components/delete-confirm-dialog'
+		 *
+		 * const deleteMutation = useUsuariosDelete()
+		 * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
+		 *   title: 'Excluir Usuário',
+		 *   description: 'Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.',
+		 *   confirmText: 'Sim, excluir',
+		 *   cancelText: 'Cancelar'
+		 * })
+		 *
+		 * // No JSX:
+		 * <Button
+		 *   variant="destructive"
+		 *   onClick={() => deleteConfirmation.confirmDelete(usuario.id)}
+		 * >
+		 *   Excluir
+		 * </Button>
+		 * <DeleteConfirmDialog {...deleteConfirmation} />
+		 *
+		 * @example
+		 * // Com descrição dinâmica baseada no item
+		 * const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
+		 *   title: 'Excluir Usuário',
+		 *   getDescription: (item) => `Deseja excluir o usuário "${item.nome}"?`,
+		 * })
+		 *
+		 * // Passar o objeto completo
+		 * <Button onClick={() => deleteConfirmation.confirmDelete(usuario)}>
+		 *   Excluir
+		 * </Button>
+		 *
+		 * @example
+		 * // ⚠️  Uso direto (sem confirmação - não recomendado)
+		 * const deleteMutation = useDelete()
+		 * deleteMutation.mutate('123')
+		 *
+		 * @example
+		 * // Com callbacks personalizados
+		 * const deleteMutation = useDelete({
+		 *   onSuccess: () => {
+		 *     toast.success('Deletado com sucesso!')
+		 *     navigate('/usuarios')
+		 *   },
+		 *   onError: (error) => {
+		 *     toast.error(`Erro ao deletar: ${error.message}`)
+		 *   }
+		 * })
+		 *
+		 * @example
+		 * // Em ações de tabela (GenericTable)
+		 * const actions = [
+		 *   {
+		 *     label: 'Editar',
+		 *     icon: Edit,
+		 *     to: (row) => `/usuarios/${row.id}`,
+		 *   },
+		 *   {
+		 *     label: 'Excluir',
+		 *     icon: Trash2,
+		 *     variant: 'destructive',
+		 *     onClick: (row) => deleteConfirmation.confirmDelete(row),
+		 *   }
+		 * ]
+		 */
+		useDelete: (options = {}) => {
+			const queryClient = useQueryClient()
+			return useMutation({
+				mutationFn: apiMethods.delete,
+				onSuccess: (data, variables, context) => {
+					queryClient.invalidateQueries({ queryKey: keys.all })
+					if (options.onSuccess) options.onSuccess(data, variables, context)
+				},
+				...options,
+			})
+		},
+	}
+
+	return {
+		keys,
+		api: apiMethods,
+		...hooks, // Espalha os hooks (useList, useCreate, etc)
+	}
 }

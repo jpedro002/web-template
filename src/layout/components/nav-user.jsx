@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router'
 import {
 	BadgeCheck,
 	Bell,
@@ -7,6 +6,7 @@ import {
 	LogOut,
 	Sparkles,
 } from 'lucide-react'
+import { useNavigate } from 'react-router'
 
 import { Avatar, AvatarFallback, AvatarImage } from 'src/components/ui/avatar'
 import {

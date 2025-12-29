@@ -1,4 +1,18 @@
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import {
+	Bar,
+	BarChart,
+	CartesianGrid,
+	Cell,
+	Legend,
+	Line,
+	LineChart,
+	Pie,
+	PieChart,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
+} from 'recharts'
 import { useHeaderConfig } from 'src/hooks/use-header-config'
 
 /**
@@ -49,8 +63,8 @@ export default function Page() {
 								Bem-vindo ao Dashboard
 							</h2>
 							<p className="text-blue-50 text-lg max-w-2xl mx-auto mb-8">
-								Sua plataforma está em construção. Acompanhe o progresso e explore
-								as funcionalidades em desenvolvimento.
+								Sua plataforma está em construção. Acompanhe o progresso e
+								explore as funcionalidades em desenvolvimento.
 							</p>
 							<div className="flex gap-3 justify-center flex-wrap">
 								<button className="px-6 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
@@ -67,9 +81,19 @@ export default function Page() {
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 					{[
-						{ label: 'Usuários Ativos', value: '1,200', icon: '👥', change: '+12%' },
+						{
+							label: 'Usuários Ativos',
+							value: '1,200',
+							icon: '👥',
+							change: '+12%',
+						},
 						{ label: 'Projetos', value: '42', icon: '📦', change: '+8%' },
-						{ label: 'Tasks Concluídas', value: '891', icon: '✅', change: '+24%' },
+						{
+							label: 'Tasks Concluídas',
+							value: '891',
+							icon: '✅',
+							change: '+24%',
+						},
 						{ label: 'Performance', value: '98%', icon: '⚡', change: '+5%' },
 					].map((stat, idx) => (
 						<div
@@ -149,7 +173,10 @@ export default function Page() {
 									label={({ name, value }) => `${name}: ${value}%`}
 								>
 									{pieData.map((entry, index) => (
-										<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+										<Cell
+											key={`cell-${index}`}
+											fill={COLORS[index % COLORS.length]}
+										/>
 									))}
 								</Pie>
 								<Tooltip
@@ -184,8 +211,18 @@ export default function Page() {
 								}}
 							/>
 							<Legend />
-							<Bar dataKey="usuarios" fill="#3b82f6" radius={[8, 8, 0, 0]} name="Usuários" />
-							<Bar dataKey="projetos" fill="#10b981" radius={[8, 8, 0, 0]} name="Projetos" />
+							<Bar
+								dataKey="usuarios"
+								fill="#3b82f6"
+								radius={[8, 8, 0, 0]}
+								name="Usuários"
+							/>
+							<Bar
+								dataKey="projetos"
+								fill="#10b981"
+								radius={[8, 8, 0, 0]}
+								name="Projetos"
+							/>
 						</BarChart>
 					</ResponsiveContainer>
 				</div>
@@ -207,7 +244,9 @@ export default function Page() {
 							<div key={idx} className="space-y-2">
 								<div className="flex justify-between items-center">
 									<p className="text-slate-700">{item.title}</p>
-									<span className="text-slate-600 text-sm">{item.progress}%</span>
+									<span className="text-slate-600 text-sm">
+										{item.progress}%
+									</span>
 								</div>
 								<div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
 									<div

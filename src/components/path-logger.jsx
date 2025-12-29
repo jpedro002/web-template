@@ -4,8 +4,7 @@ import { useAuth } from 'src/contexts/auth-context'
 
 export function PathLogger() {
 	const location = useLocation()
-        const { isAuthenticated, isReady } = useAuth()
-    
+	const { isAuthenticated, isReady } = useAuth()
 
 	useEffect(() => {
 		const fullPath = `${location.pathname}${location.search}${location.hash}`
@@ -18,7 +17,8 @@ export function PathLogger() {
 		history.push({
 			path: fullPath,
 			timestamp: new Date().toISOString(),
-            isAuthenticated, isReady
+			isAuthenticated,
+			isReady,
 		})
 
 		// Manter apenas os últimos 50 paths
@@ -32,4 +32,3 @@ export function PathLogger() {
 
 	return null
 }
-

@@ -9,15 +9,15 @@ const BASE_URL = '/seguranca/roles'
 const baseService = createBaseService(BASE_URL, 'roles')
 
 // Extrai o que foi gerado automaticamente
-const { 
-    keys: rolesKeys, 
-    api: baseApi,
-    useList: useRolesList,
-    useListAll: useRolesListAll,
-    useGet: useRoles,
-    useCreate: useRolesCreate,
-    useUpdate: useRolesUpdate,
-    useDelete: useRolesDelete
+const {
+	keys: rolesKeys,
+	api: baseApi,
+	useList: useRolesList,
+	useListAll: useRolesListAll,
+	useGet: useRoles,
+	useCreate: useRolesCreate,
+	useUpdate: useRolesUpdate,
+	useDelete: useRolesDelete,
 } = baseService
 
 // ==========================================
@@ -30,8 +30,8 @@ const {
  * @returns {Promise<Array>} Lista de usuários
  */
 const getUsersByRole = async (roleId) => {
-    const response = await api.get(`${BASE_URL}/${roleId}/users`)
-    return response.data
+	const response = await api.get(`${BASE_URL}/${roleId}/users`)
+	return response.data
 }
 
 // ==========================================
@@ -40,8 +40,8 @@ const getUsersByRole = async (roleId) => {
 
 // API Methods (caso precise usar diretamente)
 export const rolesService = {
-    ...baseApi,
-    getUsersByRole,
+	...baseApi,
+	getUsersByRole,
 }
 
 // Query Keys (útil para invalidações manuais)
@@ -49,10 +49,10 @@ export { rolesKeys }
 
 // Hooks Base (CRUD)
 export {
-    useRolesList,
-    useRolesListAll,
-    useRoles,
-    useRolesCreate,
-    useRolesUpdate,
-    useRolesDelete
+	useRolesList,
+	useRolesListAll,
+	useRoles,
+	useRolesCreate,
+	useRolesUpdate,
+	useRolesDelete,
 }

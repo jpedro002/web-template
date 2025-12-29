@@ -1,27 +1,31 @@
-import { useParams, useNavigate } from 'react-router'
+import { ChevronLeft, FileText } from 'lucide-react'
 import { useState } from 'react'
-import { FileText, ChevronLeft } from 'lucide-react'
-import { z } from 'zod'
-import { 
-	useCards, 
-	useCardsCreate, 
-	useCardsUpdate,
-} from 'src/services/cards'
-import { Button } from 'src/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'src/components/ui/card'
-import { toast } from 'src/lib/toast'
-import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { useNavigate, useParams } from 'react-router'
 import Form from 'src/components/form/Form'
+import { Button } from 'src/components/ui/button'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from 'src/components/ui/card'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { toast } from 'src/lib/toast'
+import { useCards, useCardsCreate, useCardsUpdate } from 'src/services/cards'
+import { z } from 'zod'
 
 // =========================
 // SCHEMA ZOD
 // =========================
 const cardFormSchema = z.object({
-	title: z.string()
+	title: z
+		.string()
 		.min(1, 'Título é obrigatório')
 		.min(3, 'Título deve ter no mínimo 3 caracteres')
 		.max(200, 'Título não pode ter mais de 200 caracteres'),
-	description: z.string()
+	description: z
+		.string()
 		.max(1000, 'Descrição não pode ter mais de 1000 caracteres')
 		.optional()
 		.or(z.literal('')),
@@ -37,18 +41,17 @@ const CardDetailsPage = () => {
 		breadcrumbs: [
 			{ label: 'Teste', href: '/' },
 			{ label: 'Cards', href: '/teste/cards' },
-			{ label: isEditing ? 'Editar Card' : 'Novo Card' }
+			{ label: isEditing ? 'Editar Card' : 'Novo Card' },
 		],
 		showSearch: false,
 	})
 
 	// Buscar dados do card (se estiver editando)
-	const { data: cardData, isLoading: isLoadingCard } = useCards(
-		id,
-		{ enabled: isEditing }
-	)
+	const { data: cardData, isLoading: isLoadingCard } = useCards(id, {
+		enabled: isEditing,
+	})
 
-    console.log(JSON.stringify(cardData, null, 2))
+	console.log(JSON.stringify(cardData, null, 2))
 
 	// Mutations
 	const createMutation = useCardsCreate()
@@ -92,7 +95,7 @@ const CardDetailsPage = () => {
 				await createMutation.mutateAsync(payload)
 				toast.success('Card criado com sucesso!')
 			}
-			
+
 			navigate('/teste/cards')
 		} catch (error) {
 			toast.error(error.response?.data?.error || 'Erro ao salvar card')
@@ -130,9 +133,7 @@ const CardDetailsPage = () => {
 								<FileText className="h-5 w-5 text-primary" />
 								{isEditing ? 'Editar Card' : 'Criar Novo Card'}
 							</CardTitle>
-							<CardDescription>
-								Preencha as informações do card
-							</CardDescription>
+							<CardDescription>Preencha as informações do card</CardDescription>
 						</CardHeader>
 						<CardContent>
 							<Form
