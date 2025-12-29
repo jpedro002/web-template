@@ -1,83 +1,158 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
-import { Plus, Loader2 } from 'lucide-react'
+import { Edit, Loader2, Trash2 } from 'lucide-react'
+import { useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Button } from 'src/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card'
-import { use{{entityPascal}}List, use{{entityPascal}}Delete } from 'src/services/{{entityPlural}}'
-import { columns } from './columns'
-import { DataTable } from 'src/components/table/table'
-import { toast } from 'sonner'
+import { useNavigate, useSearchParams } from 'react-router'
+import { DeleteConfirmDialog } from 'src/components/delete-confirm-dialog'
+import { PermissionRoute } from 'src/components/protected-route'
+import { GenericTable } from 'src/components/table/table'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from 'src/components/ui/card'
+import { useDeleteWithConfirmation } from 'src/hooks/use-delete-with-confirmation'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { useTableStateFromUrl } from 'src/hooks/use-table-state-from-url'
+import { toast } from 'src/lib/toast'
+import { use{{entityPascal}}Delete, use{{entityPascal}}List } from 'src/services/{{entityPlural}}'
 
-export default function {{entityPascal}}ListPage() {
-    const [pagination, setPagination] = useState({
-        pageIndex: 0,
-        pageSize: 10,
-    })
+const {{entityPascal}}Page = () => {
+	const navigate = useNavigate()
+	const [searchParams] = useSearchParams()
+	const query = searchParams.get('q') || ''
 
-    const { data, isLoading } = use{{entityPascal}}List({
-        page: pagination.pageIndex + 1,
-        pageSize: pagination.pageSize,
-    })
+	// 🚀 Hook para sincronizar paginação com a URL (usado para a query da API)
+	const { page, pageSize } = useTableStateFromUrl({ defaultPageSize: 20 })
 
-    const deleteMutation = use{{entityPascal}}Delete({
-        onSuccess: () => {
-            toast.success('{{entityPascal}} excluído com sucesso!')
-        },
-        onError: (error) => {
-            toast.error(error.message || 'Erro ao excluir {{entityLower}}')
-        },
-    })
+	const {
+		data: {{entityPluralCamel}}Data,
+		isLoading,
+		isFetching,
+	} = use{{entityPascal}}List({
+		page,
+		pageSize,
+		term: query,
+		fields: ['title'], // TODO: Ajustar campos de busca
+	})
 
-    const handleDelete = (id) => {
-        if (window.confirm('Tem certeza que deseja excluir este {{entityLower}}?')) {
-            deleteMutation.mutate(id)
-        }
-    }
+	const deleteMutation = use{{entityPascal}}Delete()
 
-    return (
-        <>
-            <Helmet>
-                <title>{{entityPascal}}s</title>
-            </Helmet>
+	const deleteConfirmation = useDeleteWithConfirmation(deleteMutation, {
+		title: 'Excluir {{entityPascal}}',
+		getDescription: (item) =>
+			`Tem certeza que deseja excluir "${item.title}"? Esta ação não pode ser desfeita.`,
+		confirmText: 'Sim, excluir',
+		cancelText: 'Cancelar',
+		onSuccess: () => {
+			toast.success('{{entityPascal}} excluído com sucesso!')
+		},
+		onError: (error) => {
+			toast.error(`Erro ao excluir: ${error.message}`)
+		},
+	})
 
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">{{entityPascal}}s</h1>
-                        <p className="text-muted-foreground">
-                            Gerencie os {{entityPlural}} do sistema
-                        </p>
-                    </div>
-                    <Button asChild>
-                        <Link to="new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Novo {{entityPascal}}
-                        </Link>
-                    </Button>
-                </div>
+	useHeaderConfig({
+		breadcrumbs: [{ label: '{{entityPascal}}s' }],
+		showSearch: true,
+		createPermission: '{{entityPlural}}:create',
+		newButtonLabel: 'Novo {{entityPascal}}',
+		onNewClick: () => navigate('/{{routePath}}/novo'),
+	})
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Lista de {{entityPascal}}s</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoading ? (
-                            <div className="flex items-center justify-center py-8">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : (
-                            <DataTable
-                                columns={columns({ onDelete: handleDelete })}
-                                data={data?.data || []}
-                                pagination={pagination}
-                                setPagination={setPagination}
-                                rowCount={data?.total || 0}
-                            />
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </>
-    )
+	// Configuração dos headers da tabela
+	const headers = useMemo(
+		() => [
+			{
+				label: 'Título',
+				field: 'title',
+			},
+			// TODO: Adicionar outros campos
+			{
+				label: 'Criado em',
+				field: 'createdAt',
+				type: 'date',
+			},
+		],
+		[],
+	)
+
+	const actions = useMemo(
+		() => [
+			{
+				label: 'Editar',
+				icon: Edit,
+				permission: '{{entityPlural}}:update',
+				to: (row) => `/{{routePath}}/${row.id}`,
+			},
+			{
+				label: 'Excluir',
+				icon: Trash2,
+				permission: '{{entityPlural}}:delete',
+				variant: 'destructive',
+				onClick: (row) => deleteConfirmation.confirmDelete(row),
+			},
+		],
+		[deleteConfirmation],
+	)
+
+	const {{entityPluralCamel}} = {{entityPluralCamel}}Data?.data || []
+	const rowCount = {{entityPluralCamel}}Data?.pagination?.rowCount || 0
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-96">
+				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			</div>
+		)
+	}
+
+	return (
+		<PermissionRoute permission="{{entityPlural}}:read">
+			<Helmet>
+				<title>{{entityPascal}}s</title>
+			</Helmet>
+
+			<div className="space-y-6 gap-4 p-4">
+				{/* Header da Página */}
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight">{{entityPascal}}s</h1>
+						<p className="text-muted-foreground">
+							Gerencie os {{entityPlural}} do sistema
+						</p>
+					</div>
+				</div>
+
+				{/* Tabela */}
+				<Card>
+					<CardHeader>
+						<CardTitle>
+							Lista de {{entityPascal}}s
+							{isFetching && (
+								<Loader2 className="ml-2 h-4 w-4 animate-spin inline" />
+							)}
+						</CardTitle>
+						<CardDescription>{rowCount} {{entityPlural}} cadastrados</CardDescription>
+					</CardHeader>
+					<CardContent className="overflow-x-auto">
+						<GenericTable
+							data={ {{entityPluralCamel}} }
+							headers={headers}
+							rowActions={actions}
+							selectableRows={false}
+							pagination={ {{entityPluralCamel}}Data?.pagination }
+							manageUrlState={true}
+						/>
+					</CardContent>
+				</Card>
+			</div>
+
+			{/* Dialog de confirmação de exclusão */}
+			<DeleteConfirmDialog {...deleteConfirmation} />
+		</PermissionRoute>
+	)
 }
+
+export default {{entityPascal}}Page

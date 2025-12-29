@@ -1,124 +1,154 @@
-import { useParams, useNavigate } from 'react-router'
-import { Helmet } from 'react-helmet-async'
-import { ArrowLeft, Loader2, Save } from 'lucide-react'
+import { ChevronLeft, FileText } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
+import Form from 'src/components/form/Form'
 import { Button } from 'src/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from 'src/components/ui/card'
+import { useHeaderConfig } from 'src/hooks/use-header-config'
+import { toast } from 'src/lib/toast'
 import { use{{entityPascal}}, use{{entityPascal}}Create, use{{entityPascal}}Update } from 'src/services/{{entityPlural}}'
-import { toast } from 'sonner'
+import { z } from 'zod'
 
-export default function {{entityPascal}}DetailPage() {
-    const { id } = useParams()
-    const navigate = useNavigate()
-    const isNew = id === 'new'
+// =========================
+// SCHEMA ZOD
+// =========================
+const {{entityCamel}}FormSchema = z.object({
+	title: z
+		.string()
+		.min(1, 'Título é obrigatório')
+		.min(3, 'Título deve ter no mínimo 3 caracteres')
+		.max(200, 'Título não pode ter mais de 200 caracteres'),
+	// TODO: Adicionar outros campos do schema
+})
 
-    // Busca dados se for edição
-    const { data: {{entityCamel}}, isLoading } = use{{entityPascal}}(id, {
-        enabled: !isNew,
-    })
+const {{entityPascal}}DetailsPage = () => {
+	const { id } = useParams()
+	const navigate = useNavigate()
+	const isEditing = id !== 'novo'
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
-    // Mutations
-    const createMutation = use{{entityPascal}}Create({
-        onSuccess: () => {
-            toast.success('{{entityPascal}} criado com sucesso!')
-            navigate('..')
-        },
-        onError: (error) => {
-            toast.error(error.message || 'Erro ao criar {{entityLower}}')
-        },
-    })
+	useHeaderConfig({
+		breadcrumbs: [
+			{ label: '{{entityPascal}}s', href: '/{{routePath}}' },
+			{ label: isEditing ? 'Editar {{entityPascal}}' : 'Novo {{entityPascal}}' },
+		],
+		showSearch: false,
+	})
 
-    const updateMutation = use{{entityPascal}}Update({
-        onSuccess: () => {
-            toast.success('{{entityPascal}} atualizado com sucesso!')
-            navigate('..')
-        },
-        onError: (error) => {
-            toast.error(error.message || 'Erro ao atualizar {{entityLower}}')
-        },
-    })
+	// Buscar dados (se estiver editando)
+	const { data: {{entityCamel}}Data, isLoading: isLoadingData } = use{{entityPascal}}(id, {
+		enabled: isEditing,
+	})
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        const formData = new FormData(e.target)
-        const data = Object.fromEntries(formData)
+	// Mutations
+	const createMutation = use{{entityPascal}}Create()
+	const updateMutation = use{{entityPascal}}Update()
 
-        if (isNew) {
-            createMutation.mutate(data)
-        } else {
-            updateMutation.mutate({ id, data })
-        }
-    }
+	// Configuração dos campos do formulário
+	const fields = [
+		{
+			name: 'title',
+			label: 'Título',
+			type: 'text',
+			placeholder: 'Ex: Título do {{entityLower}}',
+			required: true,
+			cols: 6,
+		},
+		// TODO: Adicionar outros campos
+	]
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-        )
-    }
+	// Submeter formulário
+	const onSubmit = async (data) => {
+		setIsSubmitting(true)
+		try {
+			// Preparar dados
+			const payload = {
+				title: data.title,
+				// TODO: Adicionar outros campos
+			}
 
-    return (
-        <>
-            <Helmet>
-                <title>{isNew ? 'Novo' : 'Editar'} {{entityPascal}}</title>
-            </Helmet>
+			if (isEditing) {
+				// Atualizar
+				await updateMutation.mutateAsync({ id, data: payload })
+				toast.success('{{entityPascal}} atualizado com sucesso!')
+			} else {
+				// Criar
+				await createMutation.mutateAsync(payload)
+				toast.success('{{entityPascal}} criado com sucesso!')
+			}
 
-            <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate('..')}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            {isNew ? 'Novo' : 'Editar'} {{entityPascal}}
-                        </h1>
-                    </div>
-                </div>
+			navigate('/{{routePath}}')
+		} catch (error) {
+			toast.error(error.response?.data?.error || 'Erro ao salvar {{entityLower}}')
+		} finally {
+			setIsSubmitting(false)
+		}
+	}
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Dados do {{entityPascal}}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* TODO: Adicionar campos do formulário aqui */}
-                            <div>
-                                <label htmlFor="nome" className="block text-sm font-medium mb-2">
-                                    Nome *
-                                </label>
-                                <input
-                                    id="nome"
-                                    name="nome"
-                                    type="text"
-                                    required
-                                    defaultValue={{{entityCamel}}?.nome}
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
+	if (isLoadingData) {
+		return (
+			<div className="flex items-center justify-center h-96">
+				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+			</div>
+		)
+	}
 
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => navigate('..')}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={createMutation.isPending || updateMutation.isPending}
-                                >
-                                    {(createMutation.isPending || updateMutation.isPending) && (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    )}
-                                    <Save className="mr-2 h-4 w-4" />
-                                    Salvar
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
-        </>
-    )
+	return (
+		<div className="min-h-full">
+			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+				{/* Breadcrumb/Voltar */}
+				<Button
+					variant="ghost"
+					className="mb-6 -ml-2"
+					onClick={() => navigate('/{{routePath}}')}
+				>
+					<ChevronLeft className="h-4 w-4 mr-2" />
+					Voltar para {{entityPascal}}s
+				</Button>
+
+				<div className="space-y-6">
+					{/* Card de Informações */}
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<FileText className="h-5 w-5 text-primary" />
+								{isEditing ? 'Editar {{entityPascal}}' : 'Criar Novo {{entityPascal}}'}
+							</CardTitle>
+							<CardDescription>Preencha as informações do {{entityLower}}</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<Form
+								fields={fields}
+								schema={ {{entityCamel}}FormSchema }
+								data={ {{entityCamel}}Data }
+								onSubmit={onSubmit}
+								isLoading={isSubmitting}
+								submitLabel={isSubmitting ? 'Salvando...' : 'Salvar {{entityPascal}}'}
+								showRequiredIndicator={true}
+							/>
+						</CardContent>
+					</Card>
+
+					{/* Botão Cancelar */}
+					<div className="flex justify-start">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => navigate('/{{routePath}}')}
+						>
+							Cancelar
+						</Button>
+					</div>
+				</div>
+			</div>
+		</div>
+	)
 }
+
+export default {{entityPascal}}DetailsPage

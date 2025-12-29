@@ -176,16 +176,6 @@ const { data, isLoading } = use${entityPascal}List({ page: 1, pageSize: 10 })
 					return true
 				},
 			},
-			{
-				type: 'list',
-				name: 'layoutType',
-				message: 'Tipo de layout:',
-				choices: [
-					{ name: 'Admin (protegido)', value: 'admin' },
-					{ name: 'Público', value: 'public' },
-				],
-				default: 'admin',
-			},
 		],
 		actions: (data) => {
 			const actions = []
@@ -219,7 +209,7 @@ const { data, isLoading } = use${entityPascal}List({ page: 1, pageSize: 10 })
 			// 2. Criar página index (lista)
 			actions.push({
 				type: 'add',
-				path: 'src/pages/(auth)/({{layoutType}})/{{entityPlural}}/index.jsx',
+				path: 'src/pages/(auth)/{{routePath}}/index.jsx',
 				templateFile: 'plop-templates/page-index.hbs',
 				data: templateData,
 			})
@@ -227,16 +217,8 @@ const { data, isLoading } = use${entityPascal}List({ page: 1, pageSize: 10 })
 			// 3. Criar página de detalhe/edição
 			actions.push({
 				type: 'add',
-				path: 'src/pages/(auth)/({{layoutType}})/{{entityPlural}}/[id].jsx',
+				path: 'src/pages/(auth)/{{routePath}}/[id].jsx',
 				templateFile: 'plop-templates/page-detail.hbs',
-				data: templateData,
-			})
-
-			// 4. Criar arquivo de colunas da tabela
-			actions.push({
-				type: 'add',
-				path: 'src/pages/(auth)/({{layoutType}})/{{entityPlural}}/columns.jsx',
-				templateFile: 'plop-templates/columns.hbs',
 				data: templateData,
 			})
 
@@ -247,16 +229,16 @@ const { data, isLoading } = use${entityPascal}List({ page: 1, pageSize: 10 })
 
 📁 Arquivos criados:
   - src/services/${entityPlural}.js
-  - src/pages/(auth)/(${data.layoutType})/${entityPlural}/index.jsx
-  - src/pages/(auth)/(${data.layoutType})/${entityPlural}/[id].jsx
-  - src/pages/(auth)/(${data.layoutType})/${entityPlural}/columns.jsx
+  - src/pages/(auth)/${data.routePath}/index.jsx
+  - src/pages/(auth)/${data.routePath}/[id].jsx
 
 🔗 Rota gerada: /${data.routePath}
 
 ⚠️  Não esqueça de:
   1. Adicionar a rota no menu (src/layout/components/app-sidebar.jsx)
-  2. Ajustar as colunas da tabela em columns.jsx
-  3. Criar o schema de validação se necessário
+  2. Ajustar os campos da tabela (headers) no index.jsx
+  3. Ajustar os campos do formulário no [id].jsx
+  4. Atualizar o schema de validação Zod conforme necessário
 				`
 			})
 
